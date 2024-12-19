@@ -7,6 +7,8 @@ import { Navbar } from './components/Navbar';
 import { SignIn } from './pages/SignIn';
 import { Register } from './pages/Register';
 import { Dashboard } from './pages/Dashboard';
+import { APIKeysPage } from './pages/APIKeysPage';
+import { DashboardLayout } from './components/DashboardLayout';
 import { PrivateRoute } from './components/PrivateRoute';
 
 // Import Roboto font
@@ -26,13 +28,16 @@ function App() {
             <Route path="/signin" element={<SignIn />} />
             <Route path="/register" element={<Register />} />
             <Route
-              path="/dashboard/*"
+              path="/dashboard"
               element={
                 <PrivateRoute>
-                  <Dashboard />
+                  <DashboardLayout />
                 </PrivateRoute>
               }
-            />
+            >
+              <Route index element={<Dashboard />} />
+              <Route path="api-keys" element={<APIKeysPage />} />
+            </Route>
             <Route path="/" element={<Navigate to="/signin" replace />} />
           </Routes>
         </Router>
