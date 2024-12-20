@@ -8,6 +8,13 @@ import { SignIn } from './pages/SignIn';
 import { Register } from './pages/Register';
 import { Dashboard } from './pages/Dashboard';
 import { APIKeysPage } from './pages/APIKeysPage';
+import { RequestsMonitoringPage } from './pages/RequestsMonitoringPage';
+import { UserManagementPage } from './pages/UserManagementPage';
+import { ProfilePage } from './pages/ProfilePage';
+import { SupportPage } from './pages/SupportPage';
+import { BillingPage } from './pages/BillingPage';
+import { UsagePage } from './pages/UsagePage';
+import { CostPage } from './pages/CostPage';
 import { DashboardLayout } from './components/DashboardLayout';
 import { PrivateRoute } from './components/PrivateRoute';
 
@@ -37,6 +44,13 @@ function App() {
             >
               <Route index element={<Dashboard />} />
               <Route path="api-keys" element={<APIKeysPage />} />
+              <Route path="requests" element={<RequestsMonitoringPage />} />
+              <Route path="users" element={<UserManagementPage />} />
+              <Route path="billing" element={<BillingPage />} />
+              <Route path="usage" element={<UsagePage />} />
+              <Route path="cost" element={<CostPage />} />
+              <Route path="profile" element={<ProfilePage />} />
+              <Route path="support" element={<SupportPage />} />
             </Route>
             <Route path="/" element={<Navigate to="/signin" replace />} />
           </Routes>

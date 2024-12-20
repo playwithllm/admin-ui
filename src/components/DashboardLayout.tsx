@@ -21,9 +21,12 @@ import {
   Assessment as RequestsIcon,
   Token as TokenIcon,
   Payment as BillingIcon,
-  Person as ProfileIcon,
+  Person as PersonIcon,
   Description as DocIcon,
   Feedback as FeedbackIcon,
+  Group as UsersIcon,
+  Timeline as UsageIcon,
+  MonetizationOn as CostIcon,
 } from '@mui/icons-material';
 import { useNavigate, Outlet } from 'react-router-dom';
 
@@ -41,11 +44,13 @@ export const DashboardLayout = () => {
 
   const menuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
+    { text: 'Users', icon: <UsersIcon />, path: '/dashboard/users' },
     { text: 'API Keys', icon: <ApiKeyIcon />, path: '/dashboard/api-keys' },
     { text: 'Requests', icon: <RequestsIcon />, path: '/dashboard/requests' },
-    { text: 'Tokens', icon: <TokenIcon />, path: '/dashboard/tokens' },
+    { text: 'Usage', icon: <UsageIcon />, path: '/dashboard/usage' },
+    { text: 'Cost', icon: <CostIcon />, path: '/dashboard/cost' },
     { text: 'Billing', icon: <BillingIcon />, path: '/dashboard/billing' },
-    { text: 'Profile', icon: <ProfileIcon />, path: '/dashboard/profile' },
+    { text: 'Profile', icon: <PersonIcon />, path: '/dashboard/profile' },
     { text: 'Documentation', icon: <DocIcon />, path: '/docs' },
     { text: 'Support', icon: <FeedbackIcon />, path: '/dashboard/support' },
   ];
