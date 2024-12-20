@@ -51,7 +51,6 @@ export const DashboardLayout = () => {
     { text: 'Cost', icon: <CostIcon />, path: '/dashboard/cost' },
     { text: 'Billing', icon: <BillingIcon />, path: '/dashboard/billing' },
     { text: 'Profile', icon: <PersonIcon />, path: '/dashboard/profile' },
-    { text: 'Documentation', icon: <DocIcon />, path: '/docs' },
     { text: 'Support', icon: <FeedbackIcon />, path: '/dashboard/support' },
   ];
 
