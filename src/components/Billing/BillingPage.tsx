@@ -4,8 +4,6 @@ import {
   Paper,
   Grid,
   Button,
-  Card,
-  CardContent,
   List,
   ListItem,
   ListItemText,
@@ -88,7 +86,7 @@ export const BillingPage = () => {
   const [autoRecharge, setAutoRecharge] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState(invoices[0]);
   const [monthlyLimit, setMonthlyLimit] = useState(0);
-  const [totalLimit, setTotalLimit] = useState(10);
+  const [totalLimit] = useState(10);
   const [notificationAmount, setNotificationAmount] = useState('$10');
   const [isLimitDialogOpen, setIsLimitDialogOpen] = useState(false);
   const [newLimit, setNewLimit] = useState('');
@@ -258,7 +256,7 @@ export const BillingPage = () => {
           {invoices.map((invoice, index) => (
             <Box key={index}>
               <ListItem 
-                button 
+                component="button"
                 onClick={() => setSelectedInvoice(invoice)}
                 sx={{ 
                   display: 'flex', 

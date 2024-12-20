@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import {
   Container,
-  Paper,
   Typography,
   Box,
   Grid,
@@ -11,7 +10,6 @@ import {
   CardContent,
   Switch,
   FormControlLabel,
-  Divider,
   Alert,
   IconButton,
   List,

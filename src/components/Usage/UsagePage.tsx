@@ -38,7 +38,7 @@ export const UsagePage = () => {
   const [workspace, setWorkspace] = useState('All Workspaces');
   const [apiKey, setApiKey] = useState('All API keys');
   const [model, setModel] = useState('All Models');
-  const [currentMonth, setCurrentMonth] = useState('Dec 2024');
+  const [currentMonth] = useState('Dec 2024');
   const [groupBy, setGroupBy] = useState('None');
 
   const handleWorkspaceChange = (event: SelectChangeEvent) => {

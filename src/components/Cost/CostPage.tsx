@@ -33,12 +33,20 @@ const sampleData = [
 
 const yAxisTicks = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0];
 
+interface TooltipProps {
+  active?: boolean;
+  payload?: Array<{
+    value: number;
+  }>;
+  label?: string;
+}
+
 export const CostPage = () => {
   const [groupBy, setGroupBy] = useState('None');
   const [workspace, setWorkspace] = useState('All Workspaces');
   const [apiKey, setApiKey] = useState('All API keys');
   const [model, setModel] = useState('All Models');
-  const [currentMonth, setCurrentMonth] = useState('Dec 2024');
+  const [currentMonth] = useState('Dec 2024');
 
   const handleGroupByChange = (event: SelectChangeEvent) => {
     setGroupBy(event.target.value);
@@ -68,7 +76,7 @@ export const CostPage = () => {
     return `$${value.toFixed(1)}`;
   };
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload, label }: TooltipProps) => {
     if (active && payload && payload.length) {
       return (
         <Paper sx={{ p: 2, bgcolor: 'background.paper' }}>

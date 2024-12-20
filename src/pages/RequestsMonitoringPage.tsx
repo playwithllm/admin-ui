@@ -3,7 +3,6 @@ import {
   Container,
   Paper,
   Typography,
-  Box,
   Table,
   TableBody,
   TableCell,
@@ -26,6 +25,15 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { Visibility as VisibilityIcon } from '@mui/icons-material';
+
+// Add this type definition near the top of the file
+type RequestDetail = {
+  requestPayload: Record<string, unknown>;
+  responsePayload: Record<string, unknown> | null;
+  headers: Record<string, string>;
+  errorMessage: string | null;
+  processingTime: number;
+};
 
 // Dummy data for requests
 const dummyRequests = [
@@ -71,8 +79,8 @@ const dummyRequests = [
   },
 ];
 
-// Dummy data for request details
-const dummyRequestDetails = {
+// Update the dummyRequestDetails declaration
+const dummyRequestDetails: Record<string, RequestDetail> = {
   'REQ-001': {
     requestPayload: {
       text: 'Sample text for classification',
@@ -158,7 +166,7 @@ export const RequestsMonitoringPage = () => {
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [userFilter, setUserFilter] = useState('');
-  const [endpointFilter, setEndpointFilter] = useState('');
+  const [endpointFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -167,7 +175,7 @@ export const RequestsMonitoringPage = () => {
   const [detailsOpen, setDetailsOpen] = useState(false);
 
   // Handle pagination changes
-  const handleChangePage = (event: unknown, newPage: number) => {
+  const handleChangePage = (_event: unknown, newPage: number) => {
     setPage(newPage);
   };
 

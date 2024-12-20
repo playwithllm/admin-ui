@@ -36,6 +36,39 @@ import {
   Add as AddIcon,
 } from '@mui/icons-material';
 
+interface UserDetails {
+  profile: {
+    name: string;
+    email: string;
+    role: string;
+    phone: string;
+    department: string;
+    joinDate: string;
+  };
+  apiKeys: Array<{
+    id: string;
+    name: string;
+    created: string;
+    lastUsed: string;
+  }>;
+  usage: {
+    apiCalls: number;
+    tokensUsed: number;
+    lastMonthCalls: number;
+    lastMonthTokens: number;
+  };
+  billing: {
+    plan: string;
+    monthlyQuota: number;
+    renewalDate: string;
+    paymentStatus: string;
+  };
+}
+
+interface UserDetailsMap {
+  [key: number]: UserDetails;
+}
+
 // Dummy data for users
 const dummyUsers = [
   {
@@ -81,7 +114,7 @@ const dummyUsers = [
 ];
 
 // Dummy data for user details
-const dummyUserDetails = {
+const dummyUserDetails: UserDetailsMap = {
   1: {
     profile: {
       name: 'John Doe',
@@ -138,6 +171,23 @@ const dummyUserDetails = {
 const roleOptions = ['Admin', 'User'];
 const statusOptions = ['Active', 'Inactive'];
 
+interface EditUserData {
+  name: string;
+  email: string;
+  role: string;
+  status: string;
+}
+
+// Add interface for user type
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  status: string;
+  lastActive: string;
+}
+
 export const UserManagementPage = () => {
   // State for pagination
   const [page, setPage] = useState(0);
@@ -149,7 +199,7 @@ export const UserManagementPage = () => {
 
   // State for edit user dialog
   const [editOpen, setEditOpen] = useState(false);
-  const [editData, setEditData] = useState<any>(null);
+  const [editData, setEditData] = useState<EditUserData | null>(null);
 
   // State for add user dialog
   const [addOpen, setAddOpen] = useState(false);
@@ -161,7 +211,7 @@ export const UserManagementPage = () => {
   });
 
   // Handle pagination changes
-  const handleChangePage = (event: unknown, newPage: number) => {
+  const handleChangePage = (_event: unknown, newPage: number) => {
     setPage(newPage);
   };
 
@@ -176,7 +226,7 @@ export const UserManagementPage = () => {
     setDetailsOpen(true);
   };
 
-  const handleEditUser = (user: any) => {
+  const handleEditUser = (user: User) => {
     setEditData(user);
     setEditOpen(true);
   };

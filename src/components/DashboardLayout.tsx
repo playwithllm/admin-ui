@@ -19,10 +19,8 @@ import {
   Dashboard as DashboardIcon,
   VpnKey as ApiKeyIcon,
   Assessment as RequestsIcon,
-  Token as TokenIcon,
   Payment as BillingIcon,
   Person as PersonIcon,
-  Description as DocIcon,
   Feedback as FeedbackIcon,
   Group as UsersIcon,
   Timeline as UsageIcon,
@@ -68,15 +66,20 @@ export const DashboardLayout = () => {
           const isActive = location.pathname === item.path;
           return (
             <ListItem
-              button
               key={item.text}
               onClick={() => navigate(item.path)}
               sx={{
+                minHeight: 48,
+                px: 2.5,
+                cursor: 'pointer',
                 bgcolor: isActive ? 'action.selected' : 'transparent',
                 '&:hover': {
                   bgcolor: isActive ? 'action.selected' : 'action.hover',
                 },
                 '& .MuiListItemIcon-root': {
+                  minWidth: 0,
+                  mr: 2,
+                  justifyContent: 'center',
                   color: isActive ? 'primary.main' : 'inherit',
                 },
                 '& .MuiListItemText-primary': {
