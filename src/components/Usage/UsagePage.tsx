@@ -25,10 +25,13 @@ import {
 
 // Sample data for the chart
 const sampleData = [
-  { date: 'Dec 01', tokens: 0 },
-  { date: 'Dec 06', tokens: 0 },
-  { date: 'Dec 11', tokens: 0 },
-  { date: 'Dec 16', tokens: 0 },
+  { date: 'Dec 01', tokens: 15000 },
+  { date: 'Dec 06', tokens: 22000 },
+  { date: 'Dec 11', tokens: 18500 },
+  { date: 'Dec 16', tokens: 25000 },
+  { date: 'Dec 21', tokens: 20000 },
+  { date: 'Dec 26', tokens: 28000 },
+  { date: 'Dec 31', tokens: 23500 },
 ];
 
 export const UsagePage = () => {

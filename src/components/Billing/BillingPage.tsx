@@ -62,15 +62,11 @@ const invoices = [
 // Sample usage data for the current invoice
 const currentInvoiceDetails = [
   {
-    model: 'Claude Instant Usage',
+    model: 'LLAMA3.2 Usage',
     details: 'No charges with usage for this product'
   },
   {
-    model: 'Claude 2 Usage',
-    details: 'No charges with usage for this product'
-  },
-  {
-    model: 'Claude 3 Haiku Usage',
+    model: 'QWEN2.5 Usage',
     rows: [
       {
         description: 'Million Input Tokens',
@@ -83,27 +79,6 @@ const currentInvoiceDetails = [
         quantity: '0.0042',
         unitPrice: '$1.25 USD',
         total: '$0.0053'
-      }
-    ]
-  },
-  {
-    model: 'Claude 3 Sonnet Usage',
-    details: 'No charges with usage for this product'
-  },
-  {
-    model: 'Claude 3 Opus Usage',
-    rows: [
-      {
-        description: 'Million Input Tokens',
-        quantity: '0.087',
-        unitPrice: '$15.00 USD',
-        total: '$1.31'
-      },
-      {
-        description: 'Million Output Tokens',
-        quantity: '0.022',
-        unitPrice: '$75.00 USD',
-        total: '$1.68'
       }
     ]
   }

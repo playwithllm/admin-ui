@@ -28,13 +28,14 @@ import {
   Timeline as UsageIcon,
   MonetizationOn as CostIcon,
 } from '@mui/icons-material';
-import { useNavigate, Outlet } from 'react-router-dom';
+import { useNavigate, Outlet, useLocation } from 'react-router-dom';
 
 const drawerWidth = 240;
 
 export const DashboardLayout = () => {
   const theme = useTheme();
   const navigate = useNavigate();
+  const location = useLocation();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -63,16 +64,32 @@ export const DashboardLayout = () => {
       </Toolbar>
       <Divider />
       <List>
-        {menuItems.map((item) => (
-          <ListItem
-            button
-            key={item.text}
-            onClick={() => navigate(item.path)}
-          >
-            <ListItemIcon>{item.icon}</ListItemIcon>
-            <ListItemText primary={item.text} />
-          </ListItem>
-        ))}
+        {menuItems.map((item) => {
+          const isActive = location.pathname === item.path;
+          return (
+            <ListItem
+              button
+              key={item.text}
+              onClick={() => navigate(item.path)}
+              sx={{
+                bgcolor: isActive ? 'action.selected' : 'transparent',
+                '&:hover': {
+                  bgcolor: isActive ? 'action.selected' : 'action.hover',
+                },
+                '& .MuiListItemIcon-root': {
+                  color: isActive ? 'primary.main' : 'inherit',
+                },
+                '& .MuiListItemText-primary': {
+                  color: isActive ? 'primary.main' : 'inherit',
+                  fontWeight: isActive ? 500 : 400,
+                },
+              }}
+            >
+              <ListItemIcon>{item.icon}</ListItemIcon>
+              <ListItemText primary={item.text} />
+            </ListItem>
+          );
+        })}
       </List>
     </div>
   );
