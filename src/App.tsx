@@ -1,4 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react'
+
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { theme } from './theme/theme';
@@ -27,6 +29,7 @@ import '@fontsource/roboto/700.css';
 function App() {
   return (
     <ThemeProvider theme={theme}>
+        <Analytics />
       <CssBaseline />
       <AuthProvider>
         <Router>
