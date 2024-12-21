@@ -12,46 +12,27 @@ import {
   Card,
   Divider,
   CircularProgress,
+  Alert,
 } from '@mui/material';
 import {
   Send as SendIcon,
   AttachFile as AttachFileIcon,
 } from '@mui/icons-material';
 
-// Dummy data for chat messages
-const dummyMessages = [
-  {
-    id: 1,
-    sender: 'user',
-    message: 'Hi, I need help with API integration',
-    timestamp: '2024-01-20T10:30:00Z',
-    read: true,
-  },
-  {
-    id: 2,
-    sender: 'support',
-    message: 'Hello! I\'d be happy to help you with the API integration. Could you please specify which part you\'re having trouble with?',
-    timestamp: '2024-01-20T10:31:00Z',
-    read: true,
-  },
-  {
-    id: 3,
-    sender: 'user',
-    message: 'I\'m getting a rate limit error when making multiple requests',
-    timestamp: '2024-01-20T10:32:00Z',
-    read: true,
-  },
-  {
-    id: 4,
-    sender: 'support',
-    message: 'I see. The default rate limit is 100 requests per minute. You can increase this by upgrading your plan or implementing request queuing in your application. Would you like me to explain how to implement request queuing?',
-    timestamp: '2024-01-20T10:33:00Z',
-    read: true,
-  },
-];
+import { useWebSocket } from '../hooks/useWebSocket';
+
+// Add this interface near the top of the file
+interface ChatMessage {
+  id: number;
+  sender: string;
+  message: string;
+  timestamp: string;
+  read: boolean;
+}
 
 export const SupportPage = () => {
-  const [messages, setMessages] = useState(dummyMessages);
+  const { socket, isConnected } = useWebSocket();
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -65,36 +46,60 @@ export const SupportPage = () => {
     scrollToBottom();
   }, [messages]);
 
+// Listen for events
+useEffect(() => {
+  if (!socket) return;
+
+  socket.on('inferenceResponse', (data) => {
+    console.log('Received:', data);
+    const responseMsg = data.result.content;
+    setMessages(prev => [...prev, {
+      id: messages.length + 1,
+      sender: 'support',
+      message: responseMsg,
+      timestamp: new Date().toISOString(),
+      read: false,
+    }]);
+    setIsTyping(false);
+  });
+
+  // Cleanup
+  return () => {
+    socket.off('inferenceResponse');
+  };
+}, [socket]);
+
+ // Send events
+  const sendMessage = (msg: string) => {
+  if (socket) {
+    socket.emit('inferenceRequest', { message: msg });
+  }
+};
+
   // Handle sending new message
   const handleSendMessage = () => {
     if (!newMessage.trim()) return;
 
-    // Add user message
+    // Clear previous messages
+    setMessages([]);
+
+    // Send events
+    sendMessage(newMessage);
+
+    // Add only the new user message
     const userMessage = {
-      id: messages.length + 1,
+      id: 1,
       sender: 'user',
       message: newMessage,
       timestamp: new Date().toISOString(),
       read: true,
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    setMessages([userMessage]);
     setNewMessage('');
 
     // Simulate support agent typing
     setIsTyping(true);
-    setTimeout(() => {
-      // Add support response
-      const supportMessage = {
-        id: messages.length + 2,
-        sender: 'support',
-        message: 'Thank you for your message. A support agent will respond shortly.',
-        timestamp: new Date().toISOString(),
-        read: false,
-      };
-      setMessages(prev => [...prev, supportMessage]);
-      setIsTyping(false);
-    }, 2000);
   };
 
   // Handle file attachment
@@ -113,6 +118,9 @@ export const SupportPage = () => {
 
   return (
     <Container maxWidth="md" sx={{ mt: 4, mb: 4, height: 'calc(100vh - 140px)' }}>
+      <Alert severity="warning" sx={{ mb: 2, position: 'sticky', top: 0, zIndex: 1000 }}>
+        This chat is for demonstration purposes only. Messages are not stored and will be cleared after each interaction.
+      </Alert>
       <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
         {/* Chat Header */}
         <Box sx={{ p: 2, bgcolor: 'primary.main', color: 'primary.contrastText' }}>
@@ -137,7 +145,7 @@ export const SupportPage = () => {
           <List>
             {messages.map((message) => (
               <ListItem
-                key={message.id}
+                key={message.timestamp}
                 sx={{
                   display: 'flex',
                   flexDirection: 'column',

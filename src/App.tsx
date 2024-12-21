@@ -5,6 +5,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { theme } from './theme/theme';
 import { AuthProvider } from './context/AuthContext';
+import { WebSocketProvider } from './context/WebSocketContext';
 import { Navbar } from './components/Navbar';
 import { SignIn } from './pages/SignIn';
 import { Register } from './pages/Register';
@@ -32,32 +33,34 @@ function App() {
         <Analytics />
       <CssBaseline />
       <AuthProvider>
-        <Router>
-          <Navbar />
-          <Routes>
-            <Route path="/signin" element={<SignIn />} />
-            <Route path="/register" element={<Register />} />
-            <Route
-              path="/dashboard"
-              element={
-                <PrivateRoute>
-                  <DashboardLayout />
-                </PrivateRoute>
-              }
-            >
-              <Route index element={<Dashboard />} />
-              <Route path="api-keys" element={<APIKeysPage />} />
-              <Route path="requests" element={<RequestsMonitoringPage />} />
-              <Route path="users" element={<UserManagementPage />} />
-              <Route path="billing" element={<BillingPage />} />
-              <Route path="usage" element={<UsagePage />} />
-              <Route path="cost" element={<CostPage />} />
-              <Route path="profile" element={<ProfilePage />} />
-              <Route path="support" element={<SupportPage />} />
-            </Route>
-            <Route path="/" element={<Navigate to="/signin" replace />} />
-          </Routes>
-        </Router>
+        <WebSocketProvider>
+          <Router>
+            <Navbar />
+            <Routes>
+              <Route path="/signin" element={<SignIn />} />
+              <Route path="/register" element={<Register />} />
+              <Route
+                path="/dashboard"
+                element={
+                  <PrivateRoute>
+                    <DashboardLayout />
+                  </PrivateRoute>
+                }
+              >
+                <Route index element={<Dashboard />} />
+                <Route path="api-keys" element={<APIKeysPage />} />
+                <Route path="requests" element={<RequestsMonitoringPage />} />
+                <Route path="users" element={<UserManagementPage />} />
+                <Route path="billing" element={<BillingPage />} />
+                <Route path="usage" element={<UsagePage />} />
+                <Route path="cost" element={<CostPage />} />
+                <Route path="profile" element={<ProfilePage />} />
+                <Route path="support" element={<SupportPage />} />
+              </Route>
+              <Route path="/" element={<Navigate to="/signin" replace />} />
+            </Routes>
+          </Router>
+        </WebSocketProvider>
       </AuthProvider>
     </ThemeProvider>
   );
