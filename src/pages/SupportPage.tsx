@@ -18,10 +18,11 @@ import {
   Send as SendIcon,
   AttachFile as AttachFileIcon,
 } from '@mui/icons-material';
+import ReactMarkdown from 'react-markdown';
+
 
 import { useWebSocket } from '../hooks/useWebSocket';
 
-// Add this interface near the top of the file
 interface ChatMessage {
   id: number;
   sender: string;
@@ -35,6 +36,8 @@ export const SupportPage = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [currentStreamingMessage, setCurrentStreamingMessage] = useState('');
+  const messageBuffer = useRef('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom when new messages arrive
@@ -44,71 +47,92 @@ export const SupportPage = () => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, currentStreamingMessage]);
 
-// Listen for events
-useEffect(() => {
-  if (!socket) return;
+  // Handle incoming message chunks with buffer pattern
+  useEffect(() => {
+    if (!socket) return;
 
-  socket.on('inferenceResponse', (data) => {
-    console.log('Received:', data);
-    const responseMsg = data.result.content;
-    setMessages(prev => [...prev, {
-      id: messages.length + 1,
-      sender: 'support',
-      message: responseMsg,
-      timestamp: new Date().toISOString(),
-      read: false,
-    }]);
-    setIsTyping(false);
-  });
+    const handleSocketMessage = (data: any) => {
+      try {
+        console.log('Received websocket data:', data);
+        
+        // if (data.type === 'start') {
+        //   // New message starting
+        //   messageBuffer.current = '';
+        //   setCurrentStreamingMessage('');
+        //   setIsTyping(true);
+        // }
+        // else
+         if (data.type === 'chunk' && data.result?.message?.content) {          
+          // Only append new content if it's not already in the buffer
+          const newContent = data.result.message.content;
+          if (!messageBuffer.current.endsWith(newContent)) {
+            messageBuffer.current += newContent;
+            setCurrentStreamingMessage(messageBuffer.current);
+          }
+        }
+        else if (data.type === 'end' && messageBuffer.current) {
+          // Message complete, add to messages list
+          const completedMessage: ChatMessage = {
+            id: Date.now(),
+            sender: 'support',
+            message: messageBuffer.current,
+            timestamp: new Date().toISOString(),
+            read: true,
+          };
+          
+          setMessages(prev => [...prev, completedMessage]);
+          messageBuffer.current = '';
+          setCurrentStreamingMessage('');
+          setIsTyping(false);
+        }
+      } catch (error) {
+        console.error('Error processing message:', error);
+      }
+    };
 
-  // Cleanup
-  return () => {
-    socket.off('inferenceResponse');
-  };
-}, [socket]);
+    // Set up event listeners
+    // socket.on('inferenceResponseStart', () => handleSocketMessage({ type: 'start' }));
+    socket.on('inferenceResponseChunk', (data) => handleSocketMessage({ type: 'chunk', ...data }));
+    socket.on('inferenceResponseEnd', () => handleSocketMessage({ type: 'end' }));
 
- // Send events
+    return () => {
+      socket.off('inferenceResponseStart');
+      socket.off('inferenceResponseChunk');
+      socket.off('inferenceResponseEnd');
+    };
+  }, [socket]);
+
   const sendMessage = (msg: string) => {
-  if (socket) {
-    socket.emit('inferenceRequest', { message: msg });
-  }
-};
+    if (socket && isConnected) {
+      socket.emit('inferenceRequest', { message: msg });
+    } else {
+      console.warn('Socket is not connected.');
+    }
+  };
 
-  // Handle sending new message
   const handleSendMessage = () => {
     if (!newMessage.trim()) return;
 
-    // Clear previous messages
-    setMessages([]);
-
-    // Send events
-    sendMessage(newMessage);
-
-    // Add only the new user message
-    const userMessage = {
-      id: 1,
+    const userMessage: ChatMessage = {
+      id: Date.now(),
       sender: 'user',
       message: newMessage,
       timestamp: new Date().toISOString(),
       read: true,
     };
 
-    setMessages([userMessage]);
+    setMessages(prev => [...prev, userMessage]);
+    sendMessage(newMessage);
     setNewMessage('');
-
-    // Simulate support agent typing
     setIsTyping(true);
   };
 
-  // Handle file attachment
   const handleAttachment = () => {
-    // Here you would typically implement file upload functionality
     console.log('File attachment clicked');
   };
 
-  // Format timestamp
   const formatTimestamp = (timestamp: string) => {
     return new Date(timestamp).toLocaleTimeString([], { 
       hour: '2-digit', 
@@ -122,7 +146,6 @@ useEffect(() => {
         This chat is for demonstration purposes only. Messages are not stored and will be cleared after each interaction.
       </Alert>
       <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-        {/* Chat Header */}
         <Box sx={{ p: 2, bgcolor: 'primary.main', color: 'primary.contrastText' }}>
           <Typography variant="h6">
             Support Chat
@@ -133,7 +156,6 @@ useEffect(() => {
         </Box>
         <Divider />
 
-        {/* Messages Area */}
         <Box sx={{ 
           flexGrow: 1, 
           overflow: 'auto', 
@@ -145,7 +167,7 @@ useEffect(() => {
           <List>
             {messages.map((message) => (
               <ListItem
-                key={message.timestamp}
+                key={message.id}
                 sx={{
                   display: 'flex',
                   flexDirection: 'column',
@@ -170,15 +192,15 @@ useEffect(() => {
                     elevation={1}
                     sx={{
                       p: 2,
-                      maxWidth: '70%',
+                      maxWidth: '80%',
                       bgcolor: message.sender === 'user' ? 'primary.light' : 'white',
                       color: message.sender === 'user' ? 'primary.contrastText' : 'text.primary',
                       borderRadius: 2,
                     }}
                   >
-                    <Typography variant="body1">
+                    <ReactMarkdown>
                       {message.message}
-                    </Typography>
+                    </ReactMarkdown>
                     <Typography
                       variant="caption"
                       sx={{
@@ -193,8 +215,42 @@ useEffect(() => {
                 </Box>
               </ListItem>
             ))}
+            
+            {/* Streaming message */}
+            {currentStreamingMessage && (
+              <ListItem
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-start',
+                  mb: 2,
+                }}
+              >
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'flex-start',
+                  gap: 1,
+                }}>
+                  <Avatar sx={{ bgcolor: 'secondary.main' }}>S</Avatar>
+                  <Paper
+                    elevation={1}
+                    sx={{
+                      p: 2,
+                      maxWidth: '70%',
+                      bgcolor: 'white',
+                      borderRadius: 2,
+                    }}
+                  >
+                    <ReactMarkdown>
+                      {currentStreamingMessage}
+                    </ReactMarkdown>
+                  </Paper>
+                </Box>
+              </ListItem>
+            )}
           </List>
-          {isTyping && (
+          
+          {isTyping && !currentStreamingMessage && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 2 }}>
               <CircularProgress size={20} />
               <Typography variant="body2" color="text.secondary">
@@ -205,7 +261,6 @@ useEffect(() => {
           <div ref={messagesEndRef} />
         </Box>
 
-        {/* Message Input Area */}
         <Box sx={{ p: 2, bgcolor: 'background.paper' }}>
           <Box sx={{ display: 'flex', gap: 1 }}>
             <IconButton
@@ -242,4 +297,4 @@ useEffect(() => {
       </Card>
     </Container>
   );
-}; 
+};
