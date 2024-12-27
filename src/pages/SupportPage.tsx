@@ -277,6 +277,7 @@ export const SupportPage = () => {
               maxRows={4}
               variant="outlined"
               size="small"
+              inputProps={{ maxLength: 200 }}
             />
             <IconButton
               color="primary"
