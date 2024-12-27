@@ -2,10 +2,10 @@ import { useEffect, useState, useMemo } from 'react';
 import { Socket, io } from 'socket.io-client';
 import { WebSocketContext } from '../hooks/useWebSocket';
 
-
 export const WebSocketProvider = ({ children }: { children: React.ReactNode }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [connectionId, setConnectionId] = useState<string>('');
 
   useEffect(() => {
     // Initialize socket connection
@@ -16,13 +16,15 @@ export const WebSocketProvider = ({ children }: { children: React.ReactNode }) =
 
     // Set up event listeners
     socketInstance.on('connect', () => {
-      console.log('WebSocket connected');
+      console.log('WebSocket connected', socketInstance.id);
       setIsConnected(true);
+      setConnectionId(socketInstance?.id??'');
     });
 
     socketInstance.on('disconnect', () => {
       console.log('WebSocket disconnected');
       setIsConnected(false);
+      setConnectionId('');
     });
 
     socketInstance.on('connect_error', (error) => {
@@ -45,12 +47,13 @@ export const WebSocketProvider = ({ children }: { children: React.ReactNode }) =
 
   const value = useMemo(() => ({
     socket,
-    isConnected
-  }), [socket, isConnected]);
+    isConnected,
+    connectionId,
+  }), [socket, isConnected, connectionId]);
 
   return (
     <WebSocketContext.Provider value={value}>
       {children}
     </WebSocketContext.Provider>
   );
-}; 
+};

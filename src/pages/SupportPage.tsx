@@ -32,7 +32,7 @@ interface ChatMessage {
 }
 
 export const SupportPage = () => {
-  const { socket, isConnected } = useWebSocket();
+  const { socket, isConnected, connectionId } = useWebSocket();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -57,13 +57,6 @@ export const SupportPage = () => {
       try {
         console.log('Received websocket data:', data);
         
-        // if (data.type === 'start') {
-        //   // New message starting
-        //   messageBuffer.current = '';
-        //   setCurrentStreamingMessage('');
-        //   setIsTyping(true);
-        // }
-        // else
          if (data.type === 'chunk' && data.result?.message?.content) {          
           // Only append new content if it's not already in the buffer
           const newContent = data.result.message.content;
@@ -148,7 +141,7 @@ export const SupportPage = () => {
       <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
         <Box sx={{ p: 2, bgcolor: 'primary.main', color: 'primary.contrastText' }}>
           <Typography variant="h6">
-            Support Chat
+            Support Chat ID: {connectionId}
           </Typography>
           <Typography variant="body2">
             We typically respond within a few minutes
