@@ -136,7 +136,7 @@ export const SupportPage = () => {
   return (
     <Container maxWidth="md" sx={{ mt: 4, mb: 4, height: 'calc(100vh - 140px)' }}>
       <Alert severity="warning" sx={{ mb: 2, position: 'sticky', top: 0, zIndex: 1000 }}>
-        This chat is for demonstration purposes only. Messages are not stored and will be cleared after each interaction.
+        This chat is for demonstration purposes only. No PII data is stored (Only the prompt is stored for now).
       </Alert>
       <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
         <Box sx={{ p: 2, bgcolor: 'primary.main', color: 'primary.contrastText' }}>
