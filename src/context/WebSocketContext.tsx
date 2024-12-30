@@ -9,7 +9,7 @@ export const WebSocketProvider = ({ children }: { children: React.ReactNode }) =
 
   useEffect(() => {
     // Initialize socket connection
-    const socketInstance = io('https://api.playwithllm.com', {
+    const socketInstance = io(import.meta.env.VITE_WS_URL ?? 'http://localhost:4001', {
       transports: ['websocket'],
       autoConnect: true,
     });

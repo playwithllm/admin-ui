@@ -20,7 +20,6 @@ import {
 } from '@mui/icons-material';
 import ReactMarkdown from 'react-markdown';
 
-
 import { useWebSocket } from '../hooks/useWebSocket';
 
 interface ChatMessage {
@@ -37,6 +36,8 @@ export const SupportPage = () => {
   const [newMessage, setNewMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [currentStreamingMessage, setCurrentStreamingMessage] = useState('');
+  const [isChatDisabled, setIsChatDisabled] = useState(false);
+  const [disableMessage, setDisableMessage] = useState('');
   const messageBuffer = useRef('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -80,18 +81,23 @@ export const SupportPage = () => {
           setCurrentStreamingMessage('');
           setIsTyping(false);
         }
+        else if (data.type === 'disable') {
+          setIsChatDisabled(true);
+          setDisableMessage(data.message);
+          return;
+        }
       } catch (error) {
         console.error('Error processing message:', error);
       }
     };
 
     // Set up event listeners
-    // socket.on('inferenceResponseStart', () => handleSocketMessage({ type: 'start' }));
+    socket.on('disableChat', (data) => handleSocketMessage({ type: 'disable', ...data }));
     socket.on('inferenceResponseChunk', (data) => handleSocketMessage({ type: 'chunk', ...data }));
     socket.on('inferenceResponseEnd', () => handleSocketMessage({ type: 'end' }));
 
     return () => {
-      socket.off('inferenceResponseStart');
+      socket.off('disableChat');
       socket.off('inferenceResponseChunk');
       socket.off('inferenceResponseEnd');
     };
@@ -241,6 +247,15 @@ export const SupportPage = () => {
                 </Box>
               </ListItem>
             )}
+
+            {/* Chat Disabled Message */}
+            {isChatDisabled && (
+              <ListItem>
+                <Typography variant="body2" color="error">
+                  {disableMessage}
+                </Typography>
+              </ListItem>
+            )}
           </List>
           
           {isTyping && !currentStreamingMessage && (
@@ -278,11 +293,12 @@ export const SupportPage = () => {
               variant="outlined"
               size="small"
               inputProps={{ maxLength: 200 }}
+              disabled={isChatDisabled}
             />
             <IconButton
               color="primary"
               onClick={handleSendMessage}
-              disabled={!newMessage.trim()}
+              disabled={isChatDisabled || !newMessage.trim()}
             >
               <SendIcon />
             </IconButton>

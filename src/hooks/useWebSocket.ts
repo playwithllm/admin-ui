@@ -6,9 +6,11 @@ export const useWebSocket = () => useContext(WebSocketContext);
 interface WebSocketContextType {
   socket: Socket | null;
   isConnected: boolean;
+  connectionId: string | null;
 }
 
 export const WebSocketContext = createContext<WebSocketContextType>({
   socket: null,
   isConnected: false,
+  connectionId: null,
 });

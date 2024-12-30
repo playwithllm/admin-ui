@@ -28,6 +28,8 @@ import {
 } from '@mui/icons-material';
 import { useNavigate, Outlet, useLocation } from 'react-router-dom';
 
+import { Navbar } from './Navbar';
+
 const drawerWidth = 240;
 
 export const DashboardLayout = () => {
@@ -106,20 +108,7 @@ export const DashboardLayout = () => {
           ml: { sm: `${drawerWidth}px` },
         }}
       >
-        <Toolbar>
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            edge="start"
-            onClick={handleDrawerToggle}
-            sx={{ mr: 2, display: { sm: 'none' } }}
-          >
-            <MenuIcon />
-          </IconButton>
-          <Typography variant="h6" noWrap component="div">
-            Dashboard
-          </Typography>
-        </Toolbar>
+          <Navbar />        
       </AppBar>
       <Box
         component="nav"

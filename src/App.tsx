@@ -34,8 +34,7 @@ function App() {
       <CssBaseline />
       <AuthProvider>
         <WebSocketProvider>
-          <Router>
-            <Navbar />
+          <Router>          
             <Routes>
               <Route path="/signin" element={<SignIn />} />
               <Route path="/register" element={<Register />} />

@@ -14,7 +14,7 @@ import {
   Notifications as NotificationsIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 
 export const Navbar = () => {
   const navigate = useNavigate();
@@ -57,7 +57,7 @@ export const Navbar = () => {
               <NotificationsIcon />
             </IconButton>
             <Typography variant="body1" sx={{ mr: 2 }}>
-              {user?.name}
+              {user?.displayName}
             </Typography>
             <IconButton
               size="large"
