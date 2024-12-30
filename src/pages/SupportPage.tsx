@@ -20,7 +20,8 @@ import {
 } from '@mui/icons-material';
 import ReactMarkdown from 'react-markdown';
 
-import { useWebSocket } from '../hooks/useWebSocket';
+import { useWebSocket } from '../context/WebSocketContext';
+import { useAuth } from '../hooks/useAuth';
 
 interface ChatMessage {
   id: number;
@@ -31,7 +32,12 @@ interface ChatMessage {
 }
 
 export const SupportPage = () => {
-  const { socket, isConnected, connectionId } = useWebSocket();
+  const { user } = useAuth();
+  const { socket } = useWebSocket();
+  // console.log('SupportPage:', {socket, user});
+  const connectionId = socket?.id;
+  const isConnected = socket?.connected;
+
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -53,6 +59,8 @@ export const SupportPage = () => {
   // Handle incoming message chunks with buffer pattern
   useEffect(() => {
     if (!socket) return;
+
+    console.log('Setting up socket event listeners...');
 
     const handleSocketMessage = (data: any) => {
       try {
@@ -101,7 +109,7 @@ export const SupportPage = () => {
       socket.off('inferenceResponseChunk');
       socket.off('inferenceResponseEnd');
     };
-  }, [socket]);
+  }, [socket?.id]);
 
   const sendMessage = (msg: string) => {
     if (socket && isConnected) {
@@ -185,7 +193,7 @@ export const SupportPage = () => {
                       bgcolor: message.sender === 'user' ? 'primary.main' : 'secondary.main',
                     }}
                   >
-                    {message.sender === 'user' ? 'U' : 'S'}
+                    {message.sender === 'user' ? user?.displayName : 'S'}
                   </Avatar>
                   <Paper
                     elevation={1}

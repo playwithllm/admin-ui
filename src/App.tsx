@@ -1,12 +1,10 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { Analytics } from '@vercel/analytics/react'
 
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { theme } from './theme/theme';
 import { AuthProvider } from './context/AuthContext';
 import { WebSocketProvider } from './context/WebSocketContext';
-import { Navbar } from './components/Navbar';
 import { SignIn } from './pages/SignIn';
 import { Register } from './pages/Register';
 import { Dashboard } from './pages/Dashboard';
@@ -30,37 +28,36 @@ import '@fontsource/roboto/700.css';
 function App() {
   return (
     <ThemeProvider theme={theme}>
-        <Analytics />
       <CssBaseline />
-      <AuthProvider>
         <WebSocketProvider>
+      <AuthProvider>
           <Router>          
             <Routes>
               <Route path="/signin" element={<SignIn />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
               <Route
-                path="/dashboard"
+                path="/"
                 element={
                   <PrivateRoute>
                     <DashboardLayout />
                   </PrivateRoute>
                 }
               >
-                <Route index element={<Dashboard />} />
+                <Route index path="dashboard" element={<Dashboard />} />
                 <Route path="api-keys" element={<APIKeysPage />} />
                 <Route path="requests" element={<RequestsMonitoringPage />} />
                 <Route path="users" element={<UserManagementPage />} />
                 <Route path="billing" element={<BillingPage />} />
                 <Route path="usage" element={<UsagePage />} />
                 <Route path="cost" element={<CostPage />} />
-                <Route path="profile" element={<ProfilePage />} />
+                <Route path="profile" element={<ProfilePage />} />               
                 <Route path="support" element={<SupportPage />} />
               </Route>
-              <Route path="/" element={<Navigate to="/signin" replace />} />
             </Routes>
           </Router>
-        </WebSocketProvider>
       </AuthProvider>
+        </WebSocketProvider>
     </ThemeProvider>
   );
 }

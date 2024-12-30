@@ -37,7 +37,7 @@ export const Navbar = () => {
 
   const handleProfile = () => {
     handleClose();
-    navigate('/dashboard/profile');
+    navigate('/profile');
   };
 
   return (
