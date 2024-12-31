@@ -28,6 +28,8 @@ import {
 } from '@mui/icons-material';
 import { useNavigate, Outlet, useLocation } from 'react-router-dom';
 
+import { Navbar } from './Navbar';
+
 const drawerWidth = 240;
 
 export const DashboardLayout = () => {
@@ -43,14 +45,14 @@ export const DashboardLayout = () => {
 
   const menuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
-    { text: 'Users', icon: <UsersIcon />, path: '/dashboard/users' },
-    { text: 'API Keys', icon: <ApiKeyIcon />, path: '/dashboard/api-keys' },
-    { text: 'Requests', icon: <RequestsIcon />, path: '/dashboard/requests' },
-    { text: 'Usage', icon: <UsageIcon />, path: '/dashboard/usage' },
-    { text: 'Cost', icon: <CostIcon />, path: '/dashboard/cost' },
-    { text: 'Billing', icon: <BillingIcon />, path: '/dashboard/billing' },
-    { text: 'Profile', icon: <PersonIcon />, path: '/dashboard/profile' },
-    { text: 'Support', icon: <FeedbackIcon />, path: '/dashboard/support' },
+    { text: 'Users', icon: <UsersIcon />, path: '/users' },
+    { text: 'API Keys', icon: <ApiKeyIcon />, path: '/api-keys' },
+    { text: 'Requests', icon: <RequestsIcon />, path: '/requests' },
+    { text: 'Usage', icon: <UsageIcon />, path: '/usage' },
+    { text: 'Cost', icon: <CostIcon />, path: '/cost' },
+    { text: 'Billing', icon: <BillingIcon />, path: '/billing' },
+    { text: 'Profile', icon: <PersonIcon />, path: '/profile' },
+    { text: 'Support', icon: <FeedbackIcon />, path: '/support' },
   ];
 
   const drawer = (
@@ -106,20 +108,7 @@ export const DashboardLayout = () => {
           ml: { sm: `${drawerWidth}px` },
         }}
       >
-        <Toolbar>
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            edge="start"
-            onClick={handleDrawerToggle}
-            sx={{ mr: 2, display: { sm: 'none' } }}
-          >
-            <MenuIcon />
-          </IconButton>
-          <Typography variant="h6" noWrap component="div">
-            Dashboard
-          </Typography>
-        </Toolbar>
+          <Navbar />        
       </AppBar>
       <Box
         component="nav"

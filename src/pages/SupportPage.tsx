@@ -20,8 +20,8 @@ import {
 } from '@mui/icons-material';
 import ReactMarkdown from 'react-markdown';
 
-
-import { useWebSocket } from '../hooks/useWebSocket';
+import { useWebSocket } from '../context/WebSocketContext';
+import { useAuth } from '../hooks/useAuth';
 
 interface ChatMessage {
   id: number;
@@ -32,11 +32,18 @@ interface ChatMessage {
 }
 
 export const SupportPage = () => {
-  const { socket, isConnected, connectionId } = useWebSocket();
+  const { user } = useAuth();
+  const { socket } = useWebSocket();
+  // console.log('SupportPage:', {socket, user});
+  const connectionId = socket?.id;
+  const isConnected = socket?.connected;
+
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [currentStreamingMessage, setCurrentStreamingMessage] = useState('');
+  const [isChatDisabled, setIsChatDisabled] = useState(false);
+  const [disableMessage, setDisableMessage] = useState('');
   const messageBuffer = useRef('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -52,6 +59,8 @@ export const SupportPage = () => {
   // Handle incoming message chunks with buffer pattern
   useEffect(() => {
     if (!socket) return;
+
+    console.log('Setting up socket event listeners...');
 
     const handleSocketMessage = (data: any) => {
       try {
@@ -80,22 +89,27 @@ export const SupportPage = () => {
           setCurrentStreamingMessage('');
           setIsTyping(false);
         }
+        else if (data.type === 'disable') {
+          setIsChatDisabled(true);
+          setDisableMessage(data.message);
+          return;
+        }
       } catch (error) {
         console.error('Error processing message:', error);
       }
     };
 
     // Set up event listeners
-    // socket.on('inferenceResponseStart', () => handleSocketMessage({ type: 'start' }));
+    socket.on('disableChat', (data) => handleSocketMessage({ type: 'disable', ...data }));
     socket.on('inferenceResponseChunk', (data) => handleSocketMessage({ type: 'chunk', ...data }));
     socket.on('inferenceResponseEnd', () => handleSocketMessage({ type: 'end' }));
 
     return () => {
-      socket.off('inferenceResponseStart');
+      socket.off('disableChat');
       socket.off('inferenceResponseChunk');
       socket.off('inferenceResponseEnd');
     };
-  }, [socket]);
+  }, [socket?.id]);
 
   const sendMessage = (msg: string) => {
     if (socket && isConnected) {
@@ -179,7 +193,7 @@ export const SupportPage = () => {
                       bgcolor: message.sender === 'user' ? 'primary.main' : 'secondary.main',
                     }}
                   >
-                    {message.sender === 'user' ? 'U' : 'S'}
+                    {message.sender === 'user' ? user?.displayName : 'S'}
                   </Avatar>
                   <Paper
                     elevation={1}
@@ -241,6 +255,15 @@ export const SupportPage = () => {
                 </Box>
               </ListItem>
             )}
+
+            {/* Chat Disabled Message */}
+            {isChatDisabled && (
+              <ListItem>
+                <Typography variant="body2" color="error">
+                  {disableMessage}
+                </Typography>
+              </ListItem>
+            )}
           </List>
           
           {isTyping && !currentStreamingMessage && (
@@ -278,11 +301,12 @@ export const SupportPage = () => {
               variant="outlined"
               size="small"
               inputProps={{ maxLength: 200 }}
+              disabled={isChatDisabled}
             />
             <IconButton
               color="primary"
               onClick={handleSendMessage}
-              disabled={!newMessage.trim()}
+              disabled={isChatDisabled || !newMessage.trim()}
             >
               <SendIcon />
             </IconButton>

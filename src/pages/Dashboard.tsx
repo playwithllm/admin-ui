@@ -238,7 +238,7 @@ export const Dashboard = () => {
             <Typography variant="h6">API Keys</Typography>  
             <Typography variant="h4">{apiKeys.active}</Typography>
             <Typography color="textSecondary">Active Keys</Typography>
-            <Button variant="contained" sx={{ mt: 2 }} onClick={() => navigate('/dashboard/api-keys')}>
+            <Button variant="contained" sx={{ mt: 2 }} onClick={() => navigate('/api-keys')}>
               Manage Keys
             </Button>
           </CardContent>

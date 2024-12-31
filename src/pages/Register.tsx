@@ -9,7 +9,7 @@ import {
   Alert,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 
 export const Register = () => {
   const navigate = useNavigate();
@@ -22,6 +22,7 @@ export const Register = () => {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(''); // Added success state
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -50,6 +51,7 @@ export const Register = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setSuccess(''); // Clear previous success message
 
     // Validate all fields are filled
     if (!Object.values(formData).every((field) => field)) {
@@ -73,9 +75,13 @@ export const Register = () => {
 
     try {
       setLoading(true);
-      const success = await register(formData.name, formData.email, formData.password);
-      if (success) {
-        navigate('/signin');
+      const result = await register(formData.name, formData.email, formData.password);
+      if (result.success) {
+        setSuccess(result.message || 'Registration successful');
+        await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait 1 second
+        navigate('/login'); // Removed navigation
+      } else {
+        setError(result.message || 'Registration failed');
       }
     } catch (err) {
       setError('An error occurred during registration');
@@ -92,12 +98,21 @@ export const Register = () => {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
+          padding: 4, // Added padding
+          boxShadow: 3, // Added box shadow
+          borderRadius: 2, // Rounded corners
+          backgroundColor: 'background.paper', // Set background color
         }}
       >
-        <Typography component="h1" variant="h5">
+        <Typography component="h1" variant="h5" sx={{ mb: 3 }}>
           Register
         </Typography>
-        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
+        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1, width: '100%' }}>
+          {success && (
+            <Alert severity="success" sx={{ mb: 2 }}>
+              {success}
+            </Alert>
+          )}
           {error && (
             <Alert severity="error" sx={{ mb: 2 }}>
               {error}
@@ -152,7 +167,7 @@ export const Register = () => {
             type="submit"
             fullWidth
             variant="contained"
-            sx={{ mt: 3, mb: 2 }}
+            sx={{ mt: 3, mb: 2, py: 1.5 }} // Increased padding
             disabled={loading}
           >
             {loading ? 'Registering...' : 'Register'}
@@ -161,7 +176,7 @@ export const Register = () => {
             <Link
               component="button"
               variant="body2"
-              onClick={() => navigate('/signin')}
+              onClick={() => navigate('/login')}
             >
               Already have an account? Sign In
             </Link>
@@ -170,4 +185,4 @@ export const Register = () => {
       </Box>
     </Container>
   );
-}; 
+};

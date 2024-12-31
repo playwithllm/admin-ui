@@ -14,7 +14,7 @@ import {
   Notifications as NotificationsIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 
 export const Navbar = () => {
   const navigate = useNavigate();
@@ -32,12 +32,12 @@ export const Navbar = () => {
   const handleLogout = () => {
     logout();
     handleClose();
-    navigate('/signin');
+    navigate('/login');
   };
 
   const handleProfile = () => {
     handleClose();
-    navigate('/dashboard/profile');
+    navigate('/profile');
   };
 
   return (
@@ -57,7 +57,7 @@ export const Navbar = () => {
               <NotificationsIcon />
             </IconButton>
             <Typography variant="body1" sx={{ mr: 2 }}>
-              {user?.name}
+              {user?.displayName}
             </Typography>
             <IconButton
               size="large"
@@ -90,7 +90,7 @@ export const Navbar = () => {
           </Box>
         ) : (
           <Box>
-            <Button color="inherit" onClick={() => navigate('/signin')}>
+            <Button color="inherit" onClick={() => navigate('/login')}>
               Sign In
             </Button>
             <Button color="inherit" onClick={() => navigate('/register')}>

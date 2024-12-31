@@ -1,59 +1,49 @@
-import { useEffect, useState, useMemo } from 'react';
+import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import { Socket, io } from 'socket.io-client';
-import { WebSocketContext } from '../hooks/useWebSocket';
 
-export const WebSocketProvider = ({ children }: { children: React.ReactNode }) => {
+interface WebSocketContextType {
+  socket: Socket | null;
+  initializeSocket: (userId: string) => void;
+}
+
+export const WebSocketContext = createContext<WebSocketContextType | undefined>(undefined);
+
+export const WebSocketProvider = ({ children }: { children: ReactNode }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
-  const [isConnected, setIsConnected] = useState(false);
-  const [connectionId, setConnectionId] = useState<string>('');
 
-  useEffect(() => {
-    // Initialize socket connection
-    const socketInstance = io('https://api.playwithllm.com', {
+  const initializeSocket = (userId: string) => {
+    console.log('Initializing WebSocket with user ID:', userId);
+    if (socket) {
+      socket.disconnect(); // Disconnect any existing socket before creating a new one
+    }
+    const newSocket = io(import.meta.env.VITE_WS_URL ?? 'http://localhost:4000', {
       transports: ['websocket'],
+      query: { userId },
       autoConnect: true,
     });
+    newSocket.on('connect', () => console.log('Socket connected:', newSocket.id));
+    newSocket.on('disconnect', () => console.log('Socket disconnected'));
+    setSocket(newSocket);
+  };
 
-    // Set up event listeners
-    socketInstance.on('connect', () => {
-      console.log('WebSocket connected', socketInstance.id);
-      setIsConnected(true);
-      setConnectionId(socketInstance?.id??'');
-    });
-
-    socketInstance.on('disconnect', () => {
-      console.log('WebSocket disconnected');
-      setIsConnected(false);
-      setConnectionId('');
-    });
-
-    socketInstance.on('connect_error', (error) => {
-      console.error('WebSocket connection error:', error);
-      setIsConnected(false);
-    });
-
-    socketInstance.on('inferenceResponse', (data) => {
-      // Handle the inference response
-      console.log('Received inference response:', data);
-    });
-
-    setSocket(socketInstance);
-
-    // Cleanup on unmount
+  useEffect(() => {
     return () => {
-      socketInstance.disconnect();
+      console.log('WebSocketProvider unmounted, cleaning up socket...');
+      socket?.disconnect();
     };
-  }, []);
-
-  const value = useMemo(() => ({
-    socket,
-    isConnected,
-    connectionId,
-  }), [socket, isConnected, connectionId]);
+  }, [socket]);
 
   return (
-    <WebSocketContext.Provider value={value}>
+    <WebSocketContext.Provider value={{ socket, initializeSocket }}>
       {children}
     </WebSocketContext.Provider>
   );
+};
+
+export const useWebSocket = () => {
+  const context = useContext(WebSocketContext);
+  if (context === undefined) {
+    throw new Error('useWebSocket must be used within a WebSocketProvider');
+  }
+  return context;
 };
