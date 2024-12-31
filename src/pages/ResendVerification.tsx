@@ -90,7 +90,7 @@ export const ResendVerification = () => {
           <Button
             fullWidth
             variant="text"
-            onClick={() => navigate('/signin')}
+            onClick={() => navigate('/login')}
           >
             Back to Sign In
           </Button>

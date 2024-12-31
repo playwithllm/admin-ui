@@ -1,6 +1,5 @@
 import { createContext, ReactNode, useState, useEffect } from 'react';
 import api from '../utils/api';
-// import { useWebSocket } from '../hooks/useWebSocket';
 import { useWebSocket } from '../context/WebSocketContext';
 
 interface User {
@@ -24,6 +23,7 @@ interface AuthContextType {
     email: string,
     password: string
   ) => Promise<{ success: boolean; message?: string }>;
+  loginWithGoogle: () => void;
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -103,8 +103,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const loginWithGoogle = () => {
+    window.location.href = `${api.getUri()}/api/auth/google`;
+  }
+
   return (
-    <AuthContext.Provider value={{ isAuthenticated, isLoading, user, login, logout, register }}>
+    <AuthContext.Provider value={{ isAuthenticated, isLoading, user, login, logout, register, loginWithGoogle }}>
       {children}
     </AuthContext.Provider>
   );

@@ -32,7 +32,7 @@ export const Navbar = () => {
   const handleLogout = () => {
     logout();
     handleClose();
-    navigate('/signin');
+    navigate('/login');
   };
 
   const handleProfile = () => {
@@ -90,7 +90,7 @@ export const Navbar = () => {
           </Box>
         ) : (
           <Box>
-            <Button color="inherit" onClick={() => navigate('/signin')}>
+            <Button color="inherit" onClick={() => navigate('/login')}>
               Sign In
             </Button>
             <Button color="inherit" onClick={() => navigate('/register')}>

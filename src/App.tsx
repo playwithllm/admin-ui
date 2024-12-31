@@ -5,7 +5,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { theme } from './theme/theme';
 import { AuthProvider } from './context/AuthContext';
 import { WebSocketProvider } from './context/WebSocketContext';
-import { SignIn } from './pages/SignIn';
+import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { Dashboard } from './pages/Dashboard';
 import { APIKeysPage } from './pages/APIKeysPage';
@@ -35,7 +35,7 @@ function App() {
       <AuthProvider>
           <Router>          
             <Routes>
-              <Route path="/signin" element={<SignIn />} />
+              <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/resend-verification" element={<ResendVerification />} />
               <Route path="/verify-email" element={<VerifyEmailPage />} />

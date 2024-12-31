@@ -19,13 +19,13 @@ export const VerifyEmailPage: React.FC = () => {
                     console.log('Verify email response:', response);
                     setSuccess('Email verified successfully. You can now log in.');
                     await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for 1 second
-                    navigate('/signin'); // Navigate to sign in page
+                    navigate('/login'); // Navigate to sign in page
                 })
                 .catch(async error => {
                     console.error('Verify email error:', error);
                     setError('Verification failed. Please try again or request a new verification email.');
                     await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for 1 second
-                    navigate('/signin'); // Navigate to sign in page
+                    navigate('/login'); // Navigate to sign in page
                 });
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps

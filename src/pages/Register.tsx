@@ -79,7 +79,7 @@ export const Register = () => {
       if (result.success) {
         setSuccess(result.message || 'Registration successful');
         await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait 1 second
-        navigate('/signin'); // Removed navigation
+        navigate('/login'); // Removed navigation
       } else {
         setError(result.message || 'Registration failed');
       }
@@ -176,7 +176,7 @@ export const Register = () => {
             <Link
               component="button"
               variant="body2"
-              onClick={() => navigate('/signin')}
+              onClick={() => navigate('/login')}
             >
               Already have an account? Sign In
             </Link>
