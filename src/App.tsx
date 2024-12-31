@@ -22,6 +22,7 @@ import { ResendVerification } from './pages/ResendVerification';
 import { VerifyEmailPage } from './pages/VerifyEmailPage';
 import { LoginSuccess } from './pages/LoginSuccess';
 import { PromptInterface} from './pages/PromptInterface';
+import { ApiKeyManager } from './pages/ApiKeysManager';
 
 // Import Roboto font
 import '@fontsource/roboto/300.css';
@@ -52,7 +53,7 @@ function App() {
                 }
               >
                 <Route index path="dashboard" element={<Dashboard />} />
-                <Route path="api-keys" element={<APIKeysPage />} />
+                <Route path="api-keys" element={<ApiKeyManager />} />
                 <Route path="requests" element={<RequestsMonitoringPage />} />
                 <Route path="users" element={<UserManagementPage />} />
                 <Route path="billing" element={<BillingPage />} />
