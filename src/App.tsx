@@ -21,6 +21,7 @@ import { PrivateRoute } from './components/PrivateRoute';
 import { ResendVerification } from './pages/ResendVerification';
 import { VerifyEmailPage } from './pages/VerifyEmailPage';
 import { LoginSuccess } from './pages/LoginSuccess';
+import { PromptInterface} from './pages/PromptInterface';
 
 // Import Roboto font
 import '@fontsource/roboto/300.css';
@@ -59,6 +60,7 @@ function App() {
                 <Route path="cost" element={<CostPage />} />
                 <Route path="profile" element={<ProfilePage />} />
                 <Route path="support" element={<SupportPage />} />
+                <Route path="prompt" element={<PromptInterface />} />
               </Route>
             </Routes>
           </Router>

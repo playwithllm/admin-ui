@@ -25,6 +25,7 @@ import {
   Group as UsersIcon,
   Timeline as UsageIcon,
   MonetizationOn as CostIcon,
+  EditSharp as PromptIcon,
 } from '@mui/icons-material';
 import { useNavigate, Outlet, useLocation } from 'react-router-dom';
 
@@ -53,6 +54,7 @@ export const DashboardLayout = () => {
     { text: 'Billing', icon: <BillingIcon />, path: '/billing' },
     { text: 'Profile', icon: <PersonIcon />, path: '/profile' },
     { text: 'Support', icon: <FeedbackIcon />, path: '/support' },
+    { text: 'Prompt', icon: < PromptIcon/>, path: '/prompt' },
   ];
 
   const drawer = (
