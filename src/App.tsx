@@ -18,8 +18,9 @@ import { UsagePage } from './pages/UsagePage';
 import { CostPage } from './pages/CostPage';
 import { DashboardLayout } from './components/DashboardLayout';
 import { PrivateRoute } from './components/PrivateRoute';
-import {ResendVerification} from './pages/ResendVerification'
-import { VerifyEmailPage} from './pages/VerifyEmailPage';
+import { ResendVerification } from './pages/ResendVerification';
+import { VerifyEmailPage } from './pages/VerifyEmailPage';
+import { LoginSuccess } from './pages/LoginSuccess';
 
 // Import Roboto font
 import '@fontsource/roboto/300.css';
@@ -31,14 +32,15 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-        <WebSocketProvider>
-      <AuthProvider>
-          <Router>          
+      <WebSocketProvider>
+        <AuthProvider>
+          <Router>
             <Routes>
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/resend-verification" element={<ResendVerification />} />
               <Route path="/verify-email" element={<VerifyEmailPage />} />
+              <Route path="/login-success" element={<LoginSuccess />} />
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
               <Route
                 path="/"
@@ -55,13 +57,13 @@ function App() {
                 <Route path="billing" element={<BillingPage />} />
                 <Route path="usage" element={<UsagePage />} />
                 <Route path="cost" element={<CostPage />} />
-                <Route path="profile" element={<ProfilePage />} />               
+                <Route path="profile" element={<ProfilePage />} />
                 <Route path="support" element={<SupportPage />} />
               </Route>
             </Routes>
           </Router>
-      </AuthProvider>
-        </WebSocketProvider>
+        </AuthProvider>
+      </WebSocketProvider>
     </ThemeProvider>
   );
 }
