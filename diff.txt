@@ -1,0 +1,408 @@
+diff --git a/src/pages/ApiKeysManager.tsx b/src/pages/ApiKeysManager.tsx
+index 04a67b9..dfeb1b1 100644
+--- a/src/pages/ApiKeysManager.tsx
++++ b/src/pages/ApiKeysManager.tsx
+@@ -4,10 +4,11 @@ import {
+   Box,
+   Button,
+   Typography,
+-  List,
+-  ListItem,
+-  ListItemText,
+-  ListItemSecondaryAction,
++  Table,
++  TableHead,
++  TableBody,
++  TableRow,
++  TableCell,
+   IconButton,
+   Dialog,
+   DialogTitle,
+@@ -18,6 +19,12 @@ import {
+   Alert,
+   CircularProgress,
+   TextField,
++  Chip,
++  TableContainer,
++  Paper,
++  Grid,
++  Card,
++  CardContent,
+ } from '@mui/material';
+ import { Refresh, Delete, ContentCopy, Add } from '@mui/icons-material';
+ import axiosInstance from '../utils/api';
+@@ -28,6 +35,11 @@ export interface ApiKey {
+   name: string;
+   keyPrefix: string;
+   status: string;
++  usage: {
++    requests: number,
++    tokens: number,
++    cost: number,
++  },
+ }
+ 
+ export const ApiKeyManager: React.FC = () => {
+@@ -126,176 +138,203 @@ export const ApiKeyManager: React.FC = () => {
+   };
+ 
+   return (
+-    <Box sx={{ maxWidth: 600, margin: '0 auto', padding: 4 }}>
+-      <Typography variant="h4" gutterBottom>
+-        API Key Management
+-      </Typography>
++    <Grid container spacing={3}>
++      <Grid item xs={12}>
++        <Card>
++          <CardContent>
++            <Box sx={{ margin: '0 auto', padding: 4 }}>
++              <Typography variant="h4" gutterBottom>
++                API Key Management
++              </Typography>
+ 
+-      <Box sx={{ marginBottom: 4 }}>
+-        <Button
+-          variant="contained"
+-          color="primary"
+-          onClick={handleOpenGenerateDialog}
+-          disabled={loading}
+-          startIcon={loading ? <CircularProgress size={20} /> : <Add />}
+-        >
+-          Generate New API Key
+-        </Button>
+-        {newApiKey && (
+-          <Box sx={{ marginTop: 2 }}>
+-            <Typography variant="h6">Newly Created API Key</Typography>
+-            <Box sx={{ padding: 2, backgroundColor: '#e0f7fa', borderRadius: 2, marginTop: 1 }}>
+-              <Typography variant="subtitle1"><strong>Name:</strong> {newlyCreatedApiKey?.name}</Typography>
+-              <Typography variant="subtitle1"><strong>Key Prefix:</strong> {newlyCreatedApiKey?.keyPrefix}</Typography>
+-              <Typography variant="subtitle1" sx={{ wordBreak: 'break-all' }}><strong>API Key:</strong> {newApiKey}</Typography>
+-              <Box sx={{ display: 'flex', alignItems: 'center', marginTop: 1 }}>
+-                <IconButton
++              <Box sx={{ marginBottom: 4 }}>
++                <Button
++                  variant="contained"
+                   color="primary"
+-                  onClick={handleCopyApiKey}
+-                  aria-label="copy API key"
++                  onClick={handleOpenGenerateDialog}
++                  disabled={loading}
++                  startIcon={loading ? <CircularProgress size={20} /> : <Add />}
+                 >
+-                  <ContentCopy />
+-                </IconButton>
++                  Generate New API Key
++                </Button>
++                {newApiKey && (
++                  <Box sx={{ marginTop: 2 }}>
++                    <Typography variant="h6">Newly Created API Key</Typography>
++                    <Box sx={{ padding: 2, backgroundColor: '#e0f7fa', borderRadius: 2, marginTop: 1 }}>
++                      <Typography variant="subtitle1"><strong>Name:</strong> {newlyCreatedApiKey?.name}</Typography>
++                      <Typography variant="subtitle1"><strong>Key Prefix:</strong> {newlyCreatedApiKey?.keyPrefix}</Typography>
++                      <Typography variant="subtitle1" sx={{ wordBreak: 'break-all' }}><strong>API Key:</strong> {newApiKey}</Typography>
++                      <Box sx={{ display: 'flex', alignItems: 'center', marginTop: 1 }}>
++                        <IconButton
++                          color="primary"
++                          onClick={handleCopyApiKey}
++                          aria-label="copy API key"
++                        >
++                          <ContentCopy />
++                        </IconButton>
++                      </Box>
++                      <Typography variant="caption" color="textSecondary" sx={{ marginTop: 1, display: 'block' }}>
++                        This is the only time you will see this API key. Please store it securely.
++                      </Typography>
++                      <Button
++                        variant="text"
++                        color="secondary"
++                        onClick={handleDismissNewApiKey}
++                        sx={{ marginTop: 1 }}
++                      >
++                        Dismiss
++                      </Button>
++                    </Box>
++                  </Box>
++                )}
+               </Box>
+-              <Typography variant="caption" color="textSecondary" sx={{ marginTop: 1, display: 'block' }}>
+-                This is the only time you will see this API key. Please store it securely.
+-              </Typography>
+-              <Button
+-                variant="text"
+-                color="secondary"
+-                onClick={handleDismissNewApiKey}
+-                sx={{ marginTop: 1 }}
+-              >
+-                Dismiss
+-              </Button>
+-            </Box>
+-          </Box>
+-        )}
+-      </Box>
+ 
+-      {/* Generate API Key Dialog */}
+-      <Dialog
+-        open={openGenerateDialog}
+-        onClose={handleCloseGenerateDialog}
+-        aria-labelledby="generate-api-key-dialog-title"
+-      >
+-        <DialogTitle id="generate-api-key-dialog-title">Generate New API Key</DialogTitle>
+-        <DialogContent>
+-          <DialogContentText>
+-            Please enter a name for the new API key.
+-          </DialogContentText>
+-          <TextField
+-            autoFocus
+-            margin="dense"
+-            label="API Key Name"
+-            type="text"
+-            fullWidth
+-            variant="standard"
+-            value={newApiKeyName}
+-            onChange={(e) => setNewApiKeyName(e.target.value)}
+-          />
+-        </DialogContent>
+-        <DialogActions>
+-          <Button onClick={handleCloseGenerateDialog} color="primary">
+-            Cancel
+-          </Button>
+-          <Button onClick={handleGenerateApiKey} color="primary" disabled={!newApiKeyName}>
+-            Submit
+-          </Button>
+-        </DialogActions>
+-      </Dialog>
++              {/* Generate API Key Dialog */}
++              <Dialog
++                open={openGenerateDialog}
++                onClose={handleCloseGenerateDialog}
++                aria-labelledby="generate-api-key-dialog-title"
++              >
++                <DialogTitle id="generate-api-key-dialog-title">Generate New API Key</DialogTitle>
++                <DialogContent>
++                  <DialogContentText>
++                    Please enter a name for the new API key.
++                  </DialogContentText>
++                  <TextField
++                    autoFocus
++                    margin="dense"
++                    label="API Key Name"
++                    type="text"
++                    fullWidth
++                    variant="standard"
++                    value={newApiKeyName}
++                    onChange={(e) => setNewApiKeyName(e.target.value)}
++                  />
++                </DialogContent>
++                <DialogActions>
++                  <Button onClick={handleCloseGenerateDialog} color="primary">
++                    Cancel
++                  </Button>
++                  <Button onClick={handleGenerateApiKey} color="primary" disabled={!newApiKeyName}>
++                    Submit
++                  </Button>
++                </DialogActions>
++              </Dialog>
+ 
+-      <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: 2 }}>
+-        <Typography variant="h6" sx={{ flexGrow: 1 }}>
+-          Your API Keys
+-        </Typography>
+-        <IconButton onClick={fetchApiKeys} disabled={loading}>
+-          <Refresh />
+-        </IconButton>
+-      </Box>
++              <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: 2 }}>
++                <Typography variant="h6" sx={{ flexGrow: 1 }}>
++                  Your API Keys
++                </Typography>
++                <IconButton onClick={fetchApiKeys} disabled={loading}>
++                  <Refresh />
++                </IconButton>
++              </Box>
+ 
+-      <List>
+-        {apiKeys?.map((key) => (
+-          <ListItem key={key._id} sx={{ backgroundColor: '#fafafa', marginBottom: 1, borderRadius: 1 }}>
+-            <ListItemText
+-              primary={`Name: ${key.name}`}
+-              secondary={
+-                <>                 
+-                  <Typography component="span" variant="body2" color="textPrimary">
+-                    Key Prefix: {key.keyPrefix}
+-                  </Typography>
+-                  <br />
+-                  Created At: {new Date(key.createdAt).toLocaleString()} - Status: {key.status === 'revoked' ? 'Revoked' : 'Active'}
+-                </>
+-              }
+-            />
+-            {key.status === 'active' && (
+-              <IconButton edge="end" color="error" onClick={() => handleRevokeApiKey(key._id)}>
+-              <Delete />
+-            </IconButton>
+-            )}
+-          </ListItem>
+-        ))}
+-      </List>
++              <TableContainer component={Paper}>
++                <Table>
++                  <TableHead>
++                    <TableRow>
++                      <TableCell>Name</TableCell>
++                      <TableCell>Key Prefix</TableCell>
++                      <TableCell>Created At</TableCell>
++                      <TableCell>Status</TableCell>
++                      <TableCell>Requests</TableCell>
++                      <TableCell>Tokens</TableCell>
++                      <TableCell>Cost</TableCell>
++                      <TableCell>Actions</TableCell>
++                    </TableRow>
++                  </TableHead>
++                  <TableBody>
++                    {apiKeys.map((key) => (
++                      <TableRow key={key._id}>
++                        <TableCell>{key.name}</TableCell>
++                        <TableCell>{key.keyPrefix}</TableCell>
++                        <TableCell>{new Date(key.createdAt).toLocaleString()}</TableCell>
++                        <TableCell>
++                          <Chip
++                            label={key.status === 'revoked' ? 'Revoked' : 'Active'}
++                            color={key.status === 'revoked' ? 'error' : 'success'}
++                            variant="outlined"
++                          />
++                        </TableCell>
++                        <TableCell>{key.usage.requests}</TableCell>
++                        <TableCell>{key.usage.tokens}</TableCell>
++                        <TableCell>${key.usage.cost.toFixed(2)}</TableCell>
++                        <TableCell>
++                          {key.status === 'active' && (
++                            <IconButton edge="end" color="error" onClick={() => handleRevokeApiKey(key._id)}>
++                              <Delete />
++                            </IconButton>
++                          )}
++                        </TableCell>
++                      </TableRow>
++                    ))}
++                  </TableBody>
++                </Table>
++              </TableContainer>
+ 
+-      {/* Revoke Confirmation Dialog */}
+-      <Dialog
+-        open={openRevokeDialog}
+-        onClose={() => setOpenRevokeDialog(false)}
+-        aria-labelledby="revoke-dialog-title"
+-      >
+-        <DialogTitle id="revoke-dialog-title">Revoke API Key</DialogTitle>
+-        <DialogContent>
+-          <DialogContentText>
+-            Are you sure you want to revoke this API key? This action cannot be undone.
+-          </DialogContentText>
+-        </DialogContent>
+-        <DialogActions>
+-          <Button onClick={() => setOpenRevokeDialog(false)} color="primary">
+-            Cancel
+-          </Button>
+-          <Button onClick={confirmRevokeApiKey} color="error">
+-            Revoke
+-          </Button>
+-        </DialogActions>
+-      </Dialog>
++              {/* Revoke Confirmation Dialog */}
++              <Dialog
++                open={openRevokeDialog}
++                onClose={() => setOpenRevokeDialog(false)}
++                aria-labelledby="revoke-dialog-title"
++              >
++                <DialogTitle id="revoke-dialog-title">Revoke API Key</DialogTitle>
++                <DialogContent>
++                  <DialogContentText>
++                    Are you sure you want to revoke this API key? This action cannot be undone.
++                  </DialogContentText>
++                </DialogContent>
++                <DialogActions>
++                  <Button onClick={() => setOpenRevokeDialog(false)} color="primary">
++                    Cancel
++                  </Button>
++                  <Button onClick={confirmRevokeApiKey} color="error">
++                    Revoke
++                  </Button>
++                </DialogActions>
++              </Dialog>
+ 
+-      {/* Success Snackbar */}
+-      <Snackbar
+-        open={!!success}
+-        autoHideDuration={6000}
+-        onClose={handleCloseSnackbar}
+-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+-      >
+-        <Alert onClose={handleCloseSnackbar} severity="success" sx={{ width: '100%' }}>
+-          {success}
+-        </Alert>
+-      </Snackbar>
++              {/* Success Snackbar */}
++              <Snackbar
++                open={!!success}
++                autoHideDuration={6000}
++                onClose={handleCloseSnackbar}
++                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
++              >
++                <Alert onClose={handleCloseSnackbar} severity="success" sx={{ width: '100%' }}>
++                  {success}
++                </Alert>
++              </Snackbar>
+ 
+-      {/* Error Snackbar */}
+-      <Snackbar
+-        open={!!error}
+-        autoHideDuration={6000}
+-        onClose={handleCloseSnackbar}
+-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+-      >
+-        <Alert onClose={handleCloseSnackbar} severity="error" sx={{ width: '100%' }}>
+-          {error}
+-        </Alert>
+-      </Snackbar>
++              {/* Error Snackbar */}
++              <Snackbar
++                open={!!error}
++                autoHideDuration={6000}
++                onClose={handleCloseSnackbar}
++                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
++              >
++                <Alert onClose={handleCloseSnackbar} severity="error" sx={{ width: '100%' }}>
++                  {error}
++                </Alert>
++              </Snackbar>
+ 
+-      {/* Copy Success Snackbar */}
+-      <Snackbar
+-        open={copySuccess}
+-        autoHideDuration={3000}
+-        onClose={handleCloseSnackbar}
+-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+-      >
+-        <Alert onClose={handleCloseSnackbar} severity="success" sx={{ width: '100%' }}>
+-          API Key copied to clipboard!
+-        </Alert>
+-      </Snackbar>
+-    </Box>
++              {/* Copy Success Snackbar */}
++              <Snackbar
++                open={copySuccess}
++                autoHideDuration={3000}
++                onClose={handleCloseSnackbar}
++                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
++              >
++                <Alert onClose={handleCloseSnackbar} severity="success" sx={{ width: '100%' }}>
++                  API Key copied to clipboard!
++                </Alert>
++              </Snackbar>
++            </Box>
++          </CardContent>
++        </Card>
++      </Grid>
++    </Grid>
+   );
+ };
+ 
