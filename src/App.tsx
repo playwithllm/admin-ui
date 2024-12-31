@@ -18,6 +18,8 @@ import { UsagePage } from './pages/UsagePage';
 import { CostPage } from './pages/CostPage';
 import { DashboardLayout } from './components/DashboardLayout';
 import { PrivateRoute } from './components/PrivateRoute';
+import {ResendVerification} from './pages/ResendVerification'
+import { VerifyEmailPage} from './pages/VerifyEmailPage';
 
 // Import Roboto font
 import '@fontsource/roboto/300.css';
@@ -35,6 +37,8 @@ function App() {
             <Routes>
               <Route path="/signin" element={<SignIn />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/resend-verification" element={<ResendVerification />} />
+              <Route path="/verify-email" element={<VerifyEmailPage />} />
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
               <Route
                 path="/"

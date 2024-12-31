@@ -14,14 +14,17 @@ import { useAuth } from '../hooks/useAuth';
 export const SignIn = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const [email, setEmail] = useState('superadmin@example.com');
-  const [password, setPassword] = useState('Pass@123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isUnverified, setIsUnverified] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(''); // Added success state
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setSuccess(''); // Clear previous success message
 
     if (!email || !password) {
       setError('Please fill in all fields');
@@ -30,11 +33,19 @@ export const SignIn = () => {
 
     try {
       setLoading(true);
-      const success = await login(email, password);
-      if (success) {
-        navigate('/dashboard');
+      const result = await login(email, password);
+      console.log('Login result:', result);
+      if (result.success) {
+        setSuccess(result.message || 'Login successful');
+        navigate('/dashboard'); // Optionally keep navigation
       } else {
-        setError('Invalid email or password');
+        if(result.reason === 'email-not-verified') {
+          setIsUnverified(true);
+          setError('Email not verified. Please check your email for the verification link');
+        }
+        else{
+          setError(result.message || 'Invalid email or password');
+        }
       }
     } catch (err) {
       setError('An error occurred during sign in');
@@ -51,12 +62,21 @@ export const SignIn = () => {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
+          padding: 4, // Added padding
+          boxShadow: 3, // Added box shadow
+          borderRadius: 2, // Rounded corners
+          backgroundColor: 'background.paper', // Set background color
         }}
       >
-        <Typography component="h1" variant="h5">
+        <Typography component="h1" variant="h5" sx={{ mb: 3 }}>
           Sign In
         </Typography>
-        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
+        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1, width: '100%' }}>
+          {success && (
+            <Alert severity="success" sx={{ mb: 2 }}>
+              {success}
+            </Alert>
+          )}
           {error && (
             <Alert severity="error" sx={{ mb: 2 }}>
               {error}
@@ -90,7 +110,7 @@ export const SignIn = () => {
             type="submit"
             fullWidth
             variant="contained"
-            sx={{ mt: 3, mb: 2 }}
+            sx={{ mt: 3, mb: 2, py: 1.5 }} // Increased padding
             disabled={loading}
           >
             {loading ? 'Signing in...' : 'Sign In'}
@@ -100,12 +120,21 @@ export const SignIn = () => {
               component="button"
               variant="body2"
               onClick={() => navigate('/register')}
+              sx={{ display: 'block', mb: 1 }} // Added margin
             >
               Don't have an account? Sign Up
             </Link>
+            {isUnverified && <Link
+              component="button"
+              variant="body2"
+              onClick={() => navigate('/resend-verification')}
+              sx={{ display: 'block', mt: 1 }}
+            >
+              Resend Verification Email
+            </Link>}
           </Box>
         </Box>
       </Box>
     </Container>
   );
-}; 
+};
