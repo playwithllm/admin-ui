@@ -25,6 +25,8 @@ import {
   Group as UsersIcon,
   Timeline as UsageIcon,
   MonetizationOn as CostIcon,
+  EditSharp as PromptIcon,
+  Chat as ChatIcon,
 } from '@mui/icons-material';
 import { useNavigate, Outlet, useLocation } from 'react-router-dom';
 
@@ -45,14 +47,16 @@ export const DashboardLayout = () => {
 
   const menuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
-    { text: 'Users', icon: <UsersIcon />, path: '/users' },
+    // { text: 'Users', icon: <UsersIcon />, path: '/users' },
     { text: 'API Keys', icon: <ApiKeyIcon />, path: '/api-keys' },
+    { text: 'Prompt', icon: < PromptIcon/>, path: '/prompt' },
     { text: 'Requests', icon: <RequestsIcon />, path: '/requests' },
     { text: 'Usage', icon: <UsageIcon />, path: '/usage' },
     { text: 'Cost', icon: <CostIcon />, path: '/cost' },
-    { text: 'Billing', icon: <BillingIcon />, path: '/billing' },
-    { text: 'Profile', icon: <PersonIcon />, path: '/profile' },
-    { text: 'Support', icon: <FeedbackIcon />, path: '/support' },
+    // { text: 'Billing', icon: <BillingIcon />, path: '/billing' },
+    // { text: 'Profile', icon: <PersonIcon />, path: '/profile' },
+    { text: 'Chatbot', icon: <ChatIcon />, path: '/support' },
+    {text: 'Documentation', icon: <FeedbackIcon />, path: '/documentation'}
   ];
 
   const drawer = (

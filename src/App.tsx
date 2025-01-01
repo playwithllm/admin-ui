@@ -21,6 +21,9 @@ import { PrivateRoute } from './components/PrivateRoute';
 import { ResendVerification } from './pages/ResendVerification';
 import { VerifyEmailPage } from './pages/VerifyEmailPage';
 import { LoginSuccess } from './pages/LoginSuccess';
+import { PromptInterface} from './pages/PromptInterface';
+import { ApiKeyManager } from './pages/ApiKeysManager';
+import { Documentation } from './pages/Documentation';
 
 // Import Roboto font
 import '@fontsource/roboto/300.css';
@@ -51,7 +54,7 @@ function App() {
                 }
               >
                 <Route index path="dashboard" element={<Dashboard />} />
-                <Route path="api-keys" element={<APIKeysPage />} />
+                <Route path="api-keys" element={<ApiKeyManager />} />
                 <Route path="requests" element={<RequestsMonitoringPage />} />
                 <Route path="users" element={<UserManagementPage />} />
                 <Route path="billing" element={<BillingPage />} />
@@ -59,6 +62,8 @@ function App() {
                 <Route path="cost" element={<CostPage />} />
                 <Route path="profile" element={<ProfilePage />} />
                 <Route path="support" element={<SupportPage />} />
+                <Route path="prompt" element={<PromptInterface />} />
+                <Route path="documentation" element={<Documentation />} />
               </Route>
             </Routes>
           </Router>

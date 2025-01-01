@@ -10,7 +10,7 @@ import {
   Button,
   SelectChangeEvent,
 } from '@mui/material';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 import {
   LineChart,
@@ -22,24 +22,17 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 
-// Sample data for the chart with some variation to make it look realistic
-const sampleData = [
-  { date: 'Dec 01', cost: 0.3 },
-  { date: 'Dec 05', cost: 0.5 },
-  { date: 'Dec 09', cost: 0.8 },
-  { date: 'Dec 13', cost: 0.4 },
-  { date: 'Dec 17', cost: 0.6 },
-];
+import api from '../../utils/api';
+import { UsageData } from '../Usage/UsagePage';
 
-const yAxisTicks = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0];
 
-interface TooltipProps {
-  active?: boolean;
-  payload?: Array<{
-    value: number;
-  }>;
-  label?: string;
+interface UsageData {
+  date: string;
+  totalCost: number;
+  evalCost: number;
+  promptEvalCost: number;
 }
+
 
 export const CostPage = () => {
   const [groupBy, setGroupBy] = useState('None');
@@ -47,6 +40,26 @@ export const CostPage = () => {
   const [apiKey, setApiKey] = useState('All API keys');
   const [model, setModel] = useState('All Models');
   const [currentMonth] = useState('Dec 2024');
+
+   const [usageData, setUsageData] = useState<UsageData[]>([]);
+  const [totalCost, setTotalCost] = useState(0);
+  const [totalEvalCost, setTotalEvalCost] = useState(0);
+  const [totalPromptEvalCost, setTotalPromptEvalCost] = useState(0);
+
+  useEffect(() => {
+    // Fetch data from the API
+    api.get<UsageData[]>('/api/v1/inference/grouped-evaluation-counts').then((response) => {
+      setUsageData(response.data);
+      // Calculate totals
+      const totalCost = response.data.reduce((sum, item) => sum + item.totalCost, 0);
+      setTotalCost(totalCost);
+
+      const promptTotal = response.data.reduce((sum, item) => sum + item.promptEvalCost, 0);
+      setTotalPromptEvalCost(promptTotal);
+      const evalCostTotal   = response.data.reduce((sum, item) => sum + item.evalCost, 0);
+      setTotalEvalCost(evalCostTotal);
+    });
+  }, []);
 
   const handleGroupByChange = (event: SelectChangeEvent) => {
     setGroupBy(event.target.value);
@@ -76,28 +89,14 @@ export const CostPage = () => {
     return `$${value.toFixed(1)}`;
   };
 
-  const CustomTooltip = ({ active, payload, label }: TooltipProps) => {
-    if (active && payload && payload.length) {
-      return (
-        <Paper sx={{ p: 2, bgcolor: 'background.paper' }}>
-          <Typography variant="body2">{label}</Typography>
-          <Typography variant="body2" color="primary">
-            ${payload[0].value.toFixed(2)}
-          </Typography>
-        </Paper>
-      );
-    }
-    return null;
-  };
-
   return (
     <Box sx={{ p: 3 }}>
-      <Typography variant="h4" gutterBottom>
+      {/* <Typography variant="h4" gutterBottom>
         Cost
-      </Typography>
+      </Typography> */}
 
       {/* Filters Row */}
-      <Box sx={{ display: 'flex', gap: 2, mb: 4, flexWrap: 'wrap', alignItems: 'center' }}>
+      {/* <Box sx={{ display: 'flex', gap: 2, mb: 4, flexWrap: 'wrap', alignItems: 'center' }}>
         <FormControl size="small" sx={{ minWidth: 150 }}>
           <InputLabel>Group by</InputLabel>
           <Select value={groupBy} label="Group by" onChange={handleGroupByChange}>
@@ -145,7 +144,7 @@ export const CostPage = () => {
             Export
           </Button>
         </Box>
-      </Box>
+      </Box> */}
 
       {/* Total Cost Display */}
       <Box sx={{ mb: 4 }}>
@@ -153,7 +152,7 @@ export const CostPage = () => {
           Total cost
         </Typography>
         <Typography variant="h3" component="div" sx={{ mt: 1 }}>
-          US$0.00
+          BDT৳ {totalCost}
         </Typography>
       </Box>
 
@@ -167,23 +166,36 @@ export const CostPage = () => {
         </Typography>
         <Box sx={{ height: 400, mt: 2 }}>
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={sampleData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+            <LineChart data={usageData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis 
                 dataKey="date" 
-                axisLine={false}
-                tickLine={false}
+              
               />
-              <YAxis 
-                ticks={yAxisTicks}
-                tickFormatter={formatYAxis}
-                axisLine={false}
-                tickLine={false}
-              />
-              <Tooltip content={<CustomTooltip />} />
+              <YAxis/>       
+              <Tooltip />      
               <Line
                 type="monotone"
-                dataKey="cost"
+                name='Total Cost'
+                dataKey="totalCost"
+                stroke="#ff0000"
+                strokeWidth={2}
+                dot={false}
+                activeDot={{ r: 8 }}
+              />
+              <Line
+                type="monotone"
+                name='Eval Cost'
+                dataKey="evalCost"
+                stroke="#82ca9d"
+                strokeWidth={2}
+                dot={false}
+                activeDot={{ r: 8 }}
+              />
+              <Line
+                type="monotone"
+                name='Prompt Eval Cost'
+                dataKey="promptEvalCost"
                 stroke="#8884d8"
                 strokeWidth={2}
                 dot={false}

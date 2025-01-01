@@ -78,7 +78,7 @@ export const Register = () => {
       const result = await register(formData.name, formData.email, formData.password);
       if (result.success) {
         setSuccess(result.message || 'Registration successful');
-        await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait 1 second
+        await new Promise((resolve) => setTimeout(resolve, 5000));
         navigate('/login'); // Removed navigation
       } else {
         setError(result.message || 'Registration failed');

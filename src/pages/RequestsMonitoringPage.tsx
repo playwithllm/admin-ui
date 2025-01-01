@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Container,
   Paper,
@@ -21,141 +21,14 @@ import {
   Button,
   MenuItem,
 } from '@mui/material';
+import ReactMarkdown from 'react-markdown';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { Visibility as VisibilityIcon } from '@mui/icons-material';
+import api from '../utils/api';
+import { InferenceRequest } from '../types/inference';
 
-// Add this type definition near the top of the file
-type RequestDetail = {
-  requestPayload: Record<string, unknown>;
-  responsePayload: Record<string, unknown> | null;
-  headers: Record<string, string>;
-  errorMessage: string | null;
-  processingTime: number;
-};
-
-// Dummy data for requests
-const dummyRequests = [
-  {
-    id: 'REQ-001',
-    timestamp: '2024-01-20T10:30:00Z',
-    user: 'john.doe@example.com',
-    endpoint: '/api/classify',
-    status: 'Success',
-    latency: 245,
-  },
-  {
-    id: 'REQ-002',
-    timestamp: '2024-01-20T10:35:00Z',
-    user: 'jane.smith@example.com',
-    endpoint: '/api/summarize',
-    status: 'Error',
-    latency: 1250,
-  },
-  {
-    id: 'REQ-003',
-    timestamp: '2024-01-20T10:40:00Z',
-    user: 'bob.wilson@example.com',
-    endpoint: '/api/classify',
-    status: 'Success',
-    latency: 180,
-  },
-  {
-    id: 'REQ-004',
-    timestamp: '2024-01-20T10:45:00Z',
-    user: 'alice.jones@example.com',
-    endpoint: '/api/translate',
-    status: 'Success',
-    latency: 890,
-  },
-  {
-    id: 'REQ-005',
-    timestamp: '2024-01-20T10:50:00Z',
-    user: 'john.doe@example.com',
-    endpoint: '/api/summarize',
-    status: 'Error',
-    latency: 1500,
-  },
-];
-
-// Update the dummyRequestDetails declaration
-const dummyRequestDetails: Record<string, RequestDetail> = {
-  'REQ-001': {
-    requestPayload: {
-      text: 'Sample text for classification',
-      model: 'gpt-3.5-turbo',
-    },
-    responsePayload: {
-      category: 'technology',
-      confidence: 0.95,
-    },
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ****',
-    },
-    errorMessage: null,
-    processingTime: 245,
-  },
-  'REQ-002': {
-    requestPayload: {
-      text: 'Long text for summarization',
-      maxLength: 100,
-    },
-    responsePayload: null,
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ****',
-    },
-    errorMessage: 'Rate limit exceeded',
-    processingTime: 1250,
-  },
-  'REQ-003': {
-    requestPayload: {
-      text: 'Another text for classification',
-      model: 'gpt-4',
-    },
-    responsePayload: {
-      category: 'science',
-      confidence: 0.88,
-    },
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ****',
-    },
-    errorMessage: null,
-    processingTime: 180,
-  },
-  'REQ-004': {
-    requestPayload: {
-      text: 'Hello world',
-      targetLanguage: 'es',
-    },
-    responsePayload: {
-      translatedText: 'Hola mundo',
-      confidence: 0.98,
-    },
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ****',
-    },
-    errorMessage: null,
-    processingTime: 890,
-  },
-  'REQ-005': {
-    requestPayload: {
-      text: 'Very long article for summarization',
-      maxLength: 200,
-    },
-    responsePayload: null,
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ****',
-    },
-    errorMessage: 'Model currently unavailable',
-    processingTime: 1500,
-  },
-};
 
 const statusOptions = ['', 'Success', 'Error'];
 
@@ -174,6 +47,47 @@ export const RequestsMonitoringPage = () => {
   const [selectedRequest, setSelectedRequest] = useState<string | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
 
+  const [requests, setRequests] = useState<InferenceRequest[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchRequests = async () => {
+      try {
+        setLoading(true);
+        const response = await api.get('/api/v1/inference/search');
+        console.log('RequestsMonitoringPage',response.data);
+        const tempRequests: [] = response.data;
+        const tempRequests2: InferenceRequest[] = tempRequests.map((request: any) => {
+          return {
+            _id: request._id,
+            prompt: request.prompt,
+            createdAt: request.createdAt,
+            status: request.status,
+            result: {
+              ...request.result,
+              total_duration_in_seconds: (request.result.total_duration / (1000*1000*1000 )).toString(), // nanoseconds to seconds
+              load_duration_in_seconds: (request.result.load_duration / (1000*1000*1000 )).toString(), // nanoseconds to seconds
+              prompt_eval_duration_in_seconds: (request.result.prompt_eval_duration / (1000*1000*1000 )).toString(), // nanoseconds to seconds
+              eval_duration_in_seconds: (request.result.eval_duration / (1000*1000*1000 )).toString(), // nanoseconds to seconds
+            },
+            response: request.response,
+            error: request.error,
+          };
+        });
+        setRequests(tempRequests2);
+        setError(null);
+      } catch (err) {
+        setError('Failed to fetch requests');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRequests();
+  }, []);
+
   // Handle pagination changes
   const handleChangePage = (_event: unknown, newPage: number) => {
     setPage(newPage);
@@ -183,24 +97,6 @@ export const RequestsMonitoringPage = () => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
-
-  // Filter requests based on current filters
-  const filteredRequests = dummyRequests.filter(request => {
-    const matchesSearch = searchQuery === '' ||
-      request.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      request.user.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      request.endpoint.toLowerCase().includes(searchQuery.toLowerCase());
-
-    const matchesUser = userFilter === '' || request.user.toLowerCase().includes(userFilter.toLowerCase());
-    const matchesEndpoint = endpointFilter === '' || request.endpoint.toLowerCase().includes(endpointFilter.toLowerCase());
-    const matchesStatus = statusFilter === '' || request.status.toLowerCase() === statusFilter.toLowerCase();
-
-    const requestDate = new Date(request.timestamp);
-    const matchesDateRange = (!startDate || requestDate >= startDate) &&
-      (!endDate || requestDate <= endDate);
-
-    return matchesSearch && matchesUser && matchesEndpoint && matchesStatus && matchesDateRange;
-  });
 
   // Handle opening request details
   const handleOpenDetails = (requestId: string) => {
@@ -215,7 +111,7 @@ export const RequestsMonitoringPage = () => {
       </Typography>
 
       {/* Filters */}
-      <Paper sx={{ p: 2, mb: 2 }}>
+      {/* <Paper sx={{ p: 2, mb: 2 }}>
         <Grid container spacing={2}>
           <Grid item xs={12}>
             <TextField
@@ -270,7 +166,7 @@ export const RequestsMonitoringPage = () => {
             </TextField>
           </Grid>
         </Grid>
-      </Paper>
+      </Paper> */}
 
       {/* Requests Table */}
       <Paper sx={{ width: '100%', mb: 2 }}>
@@ -278,49 +174,51 @@ export const RequestsMonitoringPage = () => {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Request ID</TableCell>
+                <TableCell>Request prompt</TableCell>
                 <TableCell>Timestamp</TableCell>
-                <TableCell>User</TableCell>
-                <TableCell>Endpoint</TableCell>
+                {/* <TableCell>User ID</TableCell> */}
+                {/* <TableCell>Model</TableCell> */}
                 <TableCell>Status</TableCell>
-                <TableCell>Latency (ms)</TableCell>
+                <TableCell>Duration (s)</TableCell>
                 <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {filteredRequests
-                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((request) => (
-                  <TableRow key={request.id}>
-                    <TableCell>{request.id}</TableCell>
-                    <TableCell>{new Date(request.timestamp).toLocaleString()}</TableCell>
-                    <TableCell>{request.user}</TableCell>
-                    <TableCell>{request.endpoint}</TableCell>
-                    <TableCell>
-                      <Chip
-                        label={request.status}
-                        color={request.status === 'Success' ? 'success' : 'error'}
-                        size="small"
-                      />
-                    </TableCell>
-                    <TableCell>{request.latency}</TableCell>
-                    <TableCell>
-                      <IconButton
-                        size="small"
-                        onClick={() => handleOpenDetails(request.id)}
-                      >
-                        <VisibilityIcon />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={7} align="center">Loading...</TableCell>
+                </TableRow>
+              ) : requests?.map((request) => (
+                <TableRow key={request._id}>
+                  <TableCell>{request.prompt}</TableCell>
+                  <TableCell>{new Date(request.createdAt).toLocaleString()}</TableCell>
+                  {/* <TableCell>{request.userId}</TableCell> */}
+                  {/* <TableCell>{request.modelName}</TableCell> */}
+                  <TableCell>
+                    <Chip
+                      label={request.status}
+                      color={request.status === 'completed' ? 'success' : 'warning'}
+                      size="small"
+                    />
+                  </TableCell>
+                  <TableCell>{request.result?.total_duration_in_seconds || 'N/A'}</TableCell>
+                  <TableCell>
+                    <IconButton
+                      size="small"
+                      onClick={() => handleOpenDetails(request._id)}
+                    >
+                      <VisibilityIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
         </TableContainer>
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"
-          count={filteredRequests.length}
+          count={requests.length}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}
@@ -339,48 +237,39 @@ export const RequestsMonitoringPage = () => {
           Request Details - {selectedRequest}
         </DialogTitle>
         <DialogContent dividers>
-          {selectedRequest && dummyRequestDetails[selectedRequest] && (
+          {selectedRequest && (
             <Grid container spacing={2}>
               <Grid item xs={12}>
-                <Typography variant="h6">Request Payload</Typography>
+                <Typography variant="h6">Prompt</Typography>
                 <Paper sx={{ p: 2, bgcolor: 'grey.100' }}>
-                  <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>
-                    {JSON.stringify(dummyRequestDetails[selectedRequest].requestPayload, null, 2)}
-                  </pre>
+                  <ReactMarkdown>{requests.find(r => r._id === selectedRequest)?.prompt}</ReactMarkdown>                
                 </Paper>
               </Grid>
               <Grid item xs={12}>
-                <Typography variant="h6">Response Payload</Typography>
+                <Typography variant="h6">Response</Typography>
                 <Paper sx={{ p: 2, bgcolor: 'grey.100' }}>
-                  <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>
-                    {dummyRequestDetails[selectedRequest].responsePayload
-                      ? JSON.stringify(dummyRequestDetails[selectedRequest].responsePayload, null, 2)
-                      : 'No response payload'}
-                  </pre>
+                  <ReactMarkdown>{requests.find(r => r._id === selectedRequest)?.response}</ReactMarkdown>
+                
                 </Paper>
               </Grid>
               <Grid item xs={12}>
-                <Typography variant="h6">Headers</Typography>
+                <Typography variant="h6">Result Details</Typography>
                 <Paper sx={{ p: 2, bgcolor: 'grey.100' }}>
                   <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>
-                    {JSON.stringify(dummyRequestDetails[selectedRequest].headers, null, 2)}
+                    {JSON.stringify(requests.find(r => r._id === selectedRequest)?.result, null, 2)}
                   </pre>
                 </Paper>
               </Grid>
-              {dummyRequestDetails[selectedRequest].errorMessage && (
+              {requests.find(r => r._id === selectedRequest)?.error && (
                 <Grid item xs={12}>
                   <Typography variant="h6" color="error">Error Message</Typography>
                   <Paper sx={{ p: 2, bgcolor: 'error.light' }}>
                     <Typography color="error.contrastText">
-                      {dummyRequestDetails[selectedRequest].errorMessage}
+                      {requests.find(r => r._id === selectedRequest)?.error}
                     </Typography>
                   </Paper>
                 </Grid>
               )}
-              <Grid item xs={12}>
-                <Typography variant="h6">Processing Time</Typography>
-                <Typography>{dummyRequestDetails[selectedRequest].processingTime} ms</Typography>
-              </Grid>
             </Grid>
           )}
         </DialogContent>
@@ -390,4 +279,4 @@ export const RequestsMonitoringPage = () => {
       </Dialog>
     </Container>
   );
-}; 
+};

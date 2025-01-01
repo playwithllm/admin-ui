@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -10,6 +10,8 @@ import {
 import { Add as AddIcon } from '@mui/icons-material';
 import { APIKeysTable } from '../components/APIKeys/APIKeysTable';
 import { CreateAPIKeyForm } from '../components/APIKeys/CreateAPIKeyForm';
+
+import api from '../utils/api';
 
 // Dummy data for API keys
 const dummyAPIKeys = [
@@ -46,9 +48,30 @@ export const APIKeysPage = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [apiKeys, setApiKeys] = useState(dummyAPIKeys);
 
-  const handleCreateKey = (newKey: any) => {
-    setApiKeys([...apiKeys, { ...newKey, id: String(apiKeys.length + 1) }]);
-    setIsCreateModalOpen(false);
+  // load API keys from the server
+  useEffect(() => {
+    const fetchAPIKeys = async () => {
+      try {
+        const response = await api.get('/api/v1/api-keys/search');
+        console.log('API keys:', response.data);
+        setApiKeys(response.data);
+      } catch (error) {
+        console.error('Error loading API keys:', error);
+      }
+    };
+
+    fetchAPIKeys();
+  } , []);
+
+  const handleCreateKey = async (keyData: object) => {
+    try {
+      const response = await api.post('/api/v1/api-keys/create', { ...keyData });
+      console.log('New API key:', response.data);
+      setApiKeys([...apiKeys, response.data]);
+      setIsCreateModalOpen(false);
+    } catch (error) {
+      console.error('Error creating API key:', error);
+    }
   };
 
   const handleDeactivateKey = (keyId: string) => {
