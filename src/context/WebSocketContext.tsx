@@ -16,7 +16,7 @@ export const WebSocketProvider = ({ children }: { children: ReactNode }) => {
     if (socket) {
       socket.disconnect(); // Disconnect any existing socket before creating a new one
     }
-    const newSocket = io(import.meta.env.VITE_WS_URL ?? 'http://localhost:4000', {
+    const newSocket = io(import.meta.env.VITE_WS_URL ?? 'https://api.playwithllm.com', {
       transports: ['websocket'],
       query: { userId },
       autoConnect: true,

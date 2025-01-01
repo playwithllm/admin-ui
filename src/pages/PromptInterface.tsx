@@ -62,7 +62,7 @@ export const PromptInterface: React.FC = () => {
   };
 
   const generateCurlCommand = (promptText: string, apiKey: string): string => {
-    const baseUrl = import.meta.env.REACT_APP_API_URL || 'http://localhost:4000';
+    const baseUrl = import.meta.env.REACT_APP_API_URL || 'https://api.playwithllm.com';
     return `curl --location '${baseUrl}/api/generate' \\
 --header 'x-api-key: ${apiKey}' \\
 --header 'Content-Type: application/json' \\
