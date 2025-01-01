@@ -55,6 +55,7 @@ export const DashboardLayout = () => {
     // { text: 'Billing', icon: <BillingIcon />, path: '/billing' },
     // { text: 'Profile', icon: <PersonIcon />, path: '/profile' },
     { text: 'Support', icon: <FeedbackIcon />, path: '/support' },
+    {text: 'Documentation', icon: <FeedbackIcon />, path: '/documentation'}
   ];
 
   const drawer = (

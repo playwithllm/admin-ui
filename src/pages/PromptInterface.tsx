@@ -28,6 +28,9 @@ export const PromptInterface: React.FC = () => {
   const [response, setResponse] = useState<string>('');
   const [promptText, setPromptText] = useState<string>('');
   const [error, setError] = useState<any | null>(null);
+  const [refetch, setRefetch] = useState<boolean>(false);
+  const [curlCommand, setCurlCommand] = useState<string>('');
+  const [apiKey, setApiKey] = useState<string>('');
 
   // load prompts from the server
   useEffect(() => {
@@ -41,27 +44,46 @@ export const PromptInterface: React.FC = () => {
     };
 
     fetchPrompts();
-  }, []);
+  }, [refetch]);
 
   const handleSelectPrompt = (prompt: Prompt) => {
     setSelectedPrompt(prompt);
-    // ...existing code to load prompt details...
   };
 
   const handleNewPrompt = () => {
     setSelectedPrompt(null);
     setPromptText('');
     setResponse('');
+    setError(null);
+    setApiKey('');
+    setCurlCommand('');
+    setRefetch(prev => !prev);
   };
 
+  const generateCurlCommand = (promptText: string, apiKey: string): string => {
+    const baseUrl = import.meta.env.REACT_APP_API_URL || 'http://localhost:4000';
+    return `curl --location '${baseUrl}/api/generate' \\
+--header 'x-api-key: ${apiKey}' \\
+--header 'Content-Type: application/json' \\
+--data '{
+    "prompt": "${promptText.replace(/"/g, '\\"')}"
+}'`;
+  };
 
   const handleSubmit = async () => {
     setResponse('');
+    setError(null);
+    // Generate and set curl command
+    setCurlCommand(generateCurlCommand(promptText, apiKey));
   
     try {
-      await api.post('/api/v1/inference/create', 
+      await api.post('/api/generate', 
         { prompt: promptText }, 
         { 
+          headers: {
+            'x-api-key': apiKey,
+            'Content-Type': 'application/json'
+          },
           responseType: 'text',
           onDownloadProgress: (progressEvent) => {            
             const chunk = progressEvent.event.currentTarget.response;
@@ -83,7 +105,7 @@ export const PromptInterface: React.FC = () => {
       setResponse(prev => prev + '\nError occurred while processing request.');
     } finally {
       console.log('Request completed.');
-      // setIsLoading(false);
+      setRefetch(prev => !prev);
     }
   };
 
@@ -138,9 +160,38 @@ export const PromptInterface: React.FC = () => {
                   value={promptText}
                   onChange={(e) => setPromptText(e.target.value)}
                 />
-                <Button variant="contained" color="primary" onClick={handleSubmit} fullWidth style={{ marginTop: '10px' }}>
+                <TextField
+                  label="Enter your API key"
+                  variant="outlined"
+                  fullWidth
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                  style={{ marginTop: '10px' }}
+                />
+                <Button variant="contained" color="primary" onClick={handleSubmit} fullWidth style={{ marginTop: '10px' }} disabled={!promptText || !apiKey || response}>
                   Submit
                 </Button>
+                
+                {curlCommand && (
+                  <Box mt={2} p={2} bgcolor="#f5f5f5" borderRadius={1}>
+                    <Typography variant="subtitle2" gutterBottom>
+                      Equivalent cURL command:
+                    </Typography>
+                    <Typography 
+                      component="pre" 
+                      style={{ 
+                        overflowX: 'auto', 
+                        whiteSpace: 'pre-wrap', 
+                        wordBreak: 'break-all',
+                        fontSize: '0.85rem',
+                        fontFamily: 'monospace'
+                      }}
+                    >
+                      {curlCommand}
+                    </Typography>
+                  </Box>
+                )}
+
                 <Typography variant="subtitle1" style={{ marginTop: '20px' }}>
                   Response:
                 </Typography>

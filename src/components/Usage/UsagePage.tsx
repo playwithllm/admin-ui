@@ -25,7 +25,7 @@ import {
 
 import api from '../../utils/api';
 
-export interface UsageData {
+interface UsageData {
   date: string;
   promptEvalCount: number;
   evalCount: number;

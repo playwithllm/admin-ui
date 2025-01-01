@@ -259,7 +259,7 @@ export const ApiKeyManager: React.FC = () => {
                         </TableCell>
                         <TableCell>{key.usage.requests}</TableCell>
                         <TableCell>{key.usage.tokens}</TableCell>
-                        <TableCell>${key.usage.cost.toFixed(2)}</TableCell>
+                        <TableCell>${key.usage.cost?.toFixed(2)}</TableCell>
                         <TableCell>
                           {key.status === 'active' && (
                             <IconButton edge="end" color="error" onClick={() => handleRevokeApiKey(key._id)}>

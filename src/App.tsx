@@ -23,6 +23,7 @@ import { VerifyEmailPage } from './pages/VerifyEmailPage';
 import { LoginSuccess } from './pages/LoginSuccess';
 import { PromptInterface} from './pages/PromptInterface';
 import { ApiKeyManager } from './pages/ApiKeysManager';
+import { Documentation } from './pages/Documentation';
 
 // Import Roboto font
 import '@fontsource/roboto/300.css';
@@ -62,6 +63,7 @@ function App() {
                 <Route path="profile" element={<ProfilePage />} />
                 <Route path="support" element={<SupportPage />} />
                 <Route path="prompt" element={<PromptInterface />} />
+                <Route path="documentation" element={<Documentation />} />
               </Route>
             </Routes>
           </Router>
