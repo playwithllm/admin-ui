@@ -112,8 +112,9 @@ export const DashboardLayout = () => {
           ml: { sm: `${drawerWidth}px` },
         }}
       >
-          <Navbar />        
+        <Navbar onMenuClick={handleDrawerToggle} />
       </AppBar>
+      
       <Box
         component="nav"
         sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
@@ -123,9 +124,10 @@ export const DashboardLayout = () => {
           open={mobileOpen}
           onClose={handleDrawerToggle}
           ModalProps={{
-            keepMounted: true, // Better open performance on mobile.
+            keepMounted: true,
           }}
           sx={{
+            display: { xs: 'block', sm: 'block' },
             '& .MuiDrawer-paper': {
               boxSizing: 'border-box',
               width: drawerWidth,
@@ -135,15 +137,16 @@ export const DashboardLayout = () => {
           {drawer}
         </Drawer>
       </Box>
+
       <Box
         component="main"
         sx={{
           flexGrow: 1,
-          p: 3,
+          p: { xs: 2, sm: 3 },
           width: { sm: `calc(100% - ${drawerWidth}px)` },
+          marginTop: { xs: '56px', sm: '64px' },
         }}
       >
-        <Toolbar />
         <Outlet />
       </Box>
     </Box>

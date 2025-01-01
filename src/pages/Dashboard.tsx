@@ -35,10 +35,10 @@ export const Dashboard = () => {
   }, []);
 
   return (
-    <Grid container spacing={4}>
+    <Grid container spacing={{ xs: 2, md: 4 }}>
       {/* Summary Cards */}
       <Grid item xs={12} sm={6} md={3}>
-        <Card>
+        <Card sx={{ height: '100%' }}>
           <CardContent>
             <Typography color="textSecondary" gutterBottom>
               Free Tokens Remaining
@@ -48,7 +48,7 @@ export const Dashboard = () => {
         </Card>
       </Grid>
       <Grid item xs={12} sm={6} md={3}>
-        <Card>
+        <Card sx={{ height: '100%' }}>
           <CardContent>
             <Typography color="textSecondary" gutterBottom>
               Requests Today
@@ -58,7 +58,7 @@ export const Dashboard = () => {
         </Card>
       </Grid>     
       <Grid item xs={12} sm={6} md={3}>
-        <Card>
+        <Card sx={{ height: '100%' }}>
           <CardContent>
             <Typography color="textSecondary" gutterBottom>
               Total costs today
@@ -70,7 +70,7 @@ export const Dashboard = () => {
 
       {/* Remaining Quota */}
       <Grid item xs={12} sm={6} md={4}>  
-        <Card>
+        <Card sx={{ height: '100%' }}>
           <CardContent>
             <Typography variant="h6" gutterBottom>Remaining Quota</Typography>           
             <Typography>Tokens</Typography>
@@ -81,7 +81,7 @@ export const Dashboard = () => {
 
       {/* Billing Summary */}
       <Grid item xs={12} md={6}>
-        <Card>
+        <Card sx={{ height: '100%' }}>
           <CardContent>
             <Typography variant="h6" gutterBottom>Billing Summary</Typography>
             <Typography>Current Plan: {billingData.currentPlan}</Typography>
@@ -92,7 +92,7 @@ export const Dashboard = () => {
 
       {/* API Key Management */}
       <Grid item xs={12} sm={6} md={3}>
-        <Card>
+        <Card sx={{ height: '100%' }}>
           <CardContent>
             <Typography variant="h6">API Keys</Typography>  
             <Typography variant="h4">{data.activeKeys}</Typography>
@@ -106,7 +106,7 @@ export const Dashboard = () => {
 
       {/* Documentation & Resources */}
       <Grid item xs={12} sm={6} md={3}>
-        <Card>
+        <Card sx={{ height: '100%' }}>
           <CardContent>
             <Typography variant="h6" gutterBottom>Documentation &amp; Resources</Typography>
             <MuiLink href="/documentation" target="_blank" rel="noopener">

@@ -12,14 +12,19 @@ import {
 import {
   AccountCircle,
   Notifications as NotificationsIcon,
+  Menu as MenuIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { useTheme } from '@mui/material/styles';
+import { useMediaQuery } from '@mui/material';
 
-export const Navbar = () => {
+export const Navbar = ({ onMenuClick }: { onMenuClick?: () => void }) => {
   const navigate = useNavigate();
   const { isAuthenticated, logout, user } = useAuth();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -43,6 +48,17 @@ export const Navbar = () => {
   return (
     <AppBar position="static">
       <Toolbar>
+        {isMobile && (
+          <IconButton
+            color="inherit"
+            aria-label="open drawer"
+            edge="start"
+            onClick={onMenuClick}
+            sx={{ mr: 2 }}
+          >
+            <MenuIcon />
+          </IconButton>
+        )}
         <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
           API Management Dashboard
         </Typography>
