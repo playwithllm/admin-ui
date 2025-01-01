@@ -84,7 +84,7 @@ export const Navbar = () => {
               open={Boolean(anchorEl)}
               onClose={handleClose}
             >
-              <MenuItem onClick={handleProfile}>Profile</MenuItem>
+              {/* <MenuItem onClick={handleProfile}>Profile</MenuItem> */}
               <MenuItem onClick={handleLogout}>Logout</MenuItem>
             </Menu>
           </Box>

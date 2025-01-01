@@ -39,6 +39,13 @@ export interface ApiKey {
     requests: number,
     tokens: number,
     cost: number,
+    prompt_eval_count: number,
+    eval_count: number,
+    total_count: number,
+    prompt_eval_cost: number,
+    eval_cost: number,
+    total_cost: number,
+    total_duration: number,
   },
 }
 
@@ -239,8 +246,13 @@ export const ApiKeyManager: React.FC = () => {
                       <TableCell>Created At</TableCell>
                       <TableCell>Status</TableCell>
                       <TableCell>Requests</TableCell>
-                      <TableCell>Tokens</TableCell>
-                      <TableCell>Cost</TableCell>
+                      <TableCell>Input tokens</TableCell>
+                      <TableCell>Output tokens</TableCell>
+                      <TableCell>Total tokens</TableCell>
+                      <TableCell>Input cost</TableCell>
+                      <TableCell>Output cost</TableCell>
+                      <TableCell>Total cost</TableCell>
+                      <TableCell>Total duration (seconds)</TableCell>
                       <TableCell>Actions</TableCell>
                     </TableRow>
                   </TableHead>
@@ -258,8 +270,13 @@ export const ApiKeyManager: React.FC = () => {
                           />
                         </TableCell>
                         <TableCell>{key.usage.requests}</TableCell>
-                        <TableCell>{key.usage.tokens}</TableCell>
-                        <TableCell>${key.usage.cost?.toFixed(2)}</TableCell>
+                        <TableCell>{key.usage.prompt_eval_count}</TableCell>
+                        <TableCell>{key.usage.eval_count}</TableCell>
+                        <TableCell>{key.usage.total_count}</TableCell>
+                        <TableCell>{key.usage.prompt_eval_cost?.toFixed(6)}</TableCell>
+                        <TableCell>{key.usage.eval_cost?.toFixed(6)}</TableCell>
+                        <TableCell>{key.usage.total_cost?.toFixed(6)}</TableCell>
+                        <TableCell>{key.usage.total_duration?.toFixed(4)}</TableCell>
                         <TableCell>
                           {key.status === 'active' && (
                             <IconButton edge="end" color="error" onClick={() => handleRevokeApiKey(key._id)}>

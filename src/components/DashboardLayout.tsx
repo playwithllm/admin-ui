@@ -26,6 +26,7 @@ import {
   Timeline as UsageIcon,
   MonetizationOn as CostIcon,
   EditSharp as PromptIcon,
+  Chat as ChatIcon,
 } from '@mui/icons-material';
 import { useNavigate, Outlet, useLocation } from 'react-router-dom';
 
@@ -54,7 +55,7 @@ export const DashboardLayout = () => {
     { text: 'Cost', icon: <CostIcon />, path: '/cost' },
     // { text: 'Billing', icon: <BillingIcon />, path: '/billing' },
     // { text: 'Profile', icon: <PersonIcon />, path: '/profile' },
-    { text: 'Support', icon: <FeedbackIcon />, path: '/support' },
+    { text: 'Chatbot', icon: <ChatIcon />, path: '/support' },
     {text: 'Documentation', icon: <FeedbackIcon />, path: '/documentation'}
   ];
 

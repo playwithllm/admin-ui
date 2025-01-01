@@ -43,7 +43,7 @@ export const Dashboard = () => {
             <Typography color="textSecondary" gutterBottom>
               Free Tokens Remaining
             </Typography>
-            <Typography variant="h4">{data.tokenCount} / 10000</Typography>
+            <Typography variant="h4">{data.tokenCount??0} / 10000</Typography>
           </CardContent>
         </Card>
       </Grid>
@@ -53,7 +53,7 @@ export const Dashboard = () => {
             <Typography color="textSecondary" gutterBottom>
               Requests Today
             </Typography>
-            <Typography variant="h4">{data.requestCount}</Typography>
+            <Typography variant="h4">{data.requestCount??0}</Typography>
           </CardContent>
         </Card>
       </Grid>     
@@ -63,7 +63,7 @@ export const Dashboard = () => {
             <Typography color="textSecondary" gutterBottom>
               Total costs today
             </Typography>
-            <Typography variant="h4">{data.costAmount}</Typography>
+            <Typography variant="h4">{data.costAmount??0}</Typography>
           </CardContent>
         </Card>
       </Grid>      

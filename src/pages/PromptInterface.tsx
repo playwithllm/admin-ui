@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Grid, List, ListItem, ListItemText, Button, TextField, Typography } from '@mui/material';
+import { Box, Grid, List, ListItem, ListItemText, Button, TextField, Typography, IconButton } from '@mui/material';
 import ReactMarkdown from 'react-markdown';
 import api from '../utils/api';
-import { Card, CardContent, CircularProgress, Divider } from '@mui/material';
+import { Card, CardContent, Divider } from '@mui/material';
+import CopyIcon from '@mui/icons-material/ContentCopy';
 
 interface Prompt {
   _id: string;
@@ -174,8 +175,16 @@ export const PromptInterface: React.FC = () => {
                 
                 {curlCommand && (
                   <Box mt={2} p={2} bgcolor="#f5f5f5" borderRadius={1}>
-                    <Typography variant="subtitle2" gutterBottom>
+                    <Typography variant="subtitle2" gutterBottom style={{ display: 'flex', alignItems: 'center' }}>
                       Equivalent cURL command:
+                      <IconButton
+                        aria-label="copy"
+                        size="small"
+                        onClick={() => navigator.clipboard.writeText(curlCommand)}
+                        style={{ marginLeft: '8px' }}
+                      >
+                        <CopyIcon />
+                      </IconButton>
                     </Typography>
                     <Typography 
                       component="pre" 
