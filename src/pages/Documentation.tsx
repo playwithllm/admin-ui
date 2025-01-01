@@ -9,7 +9,7 @@ export function Documentation() {
 
 ## Overview
 
-Welcome to **Your LLM Inference System**, a drop-in replacement for the Ollama API inference system. With this service, you can send prompts to language models via a single endpoint, [\`/api/generate\`], using your **API key** to authenticate.
+Welcome to **Play with LLM**, a drop-in replacement for the Ollama API inference system. With this service, you can send prompts to language models via a single endpoint, [\`/api/generate\`], using your **API key** to authenticate.
 
 ### Key Highlights
 - **Prompt-based** text generation endpoint.
@@ -25,8 +25,8 @@ Welcome to **Your LLM Inference System**, a drop-in replacement for the Ollama A
 ### 1. Create Your API Key
 1. **Sign in** to the dashboard.
 2. Navigate to **API Keys** in the side menu.
-3. Click **“Create Key”** (or the relevant button).
-4. Name your key (e.g., \`MyFirstKey\`) and click **“Generate”**.
+3. Click **“Generate New API Key”** (or the relevant button).
+4. Name your key (e.g., \`MyFirstKey\`) and click **Submit**.
 5. Copy the generated key; you will need it for making requests.
 
 > **Tip:** Treat your API key like a password. Do not share it publicly or commit it to source control.
@@ -34,14 +34,14 @@ Welcome to **Your LLM Inference System**, a drop-in replacement for the Ollama A
 ### 2. Test Your API Key in the Prompt Menu
 1. Go to **Prompt** in the side menu.
 2. Enter a sample prompt in the text area.
-3. Paste your **API key** (in \`x-api-key\` header).
+3. Paste your **API key** in the API box (for the \`x-api-key\` header).
 4. Click **“Submit”**.
 5. Check the model response below the text area to confirm your key works.
 
-### 3. Make an API Call from Your Own Code
+### 3. Make an API Call from terminal
 
 \`\`\`bash
-curl -X POST https://your-domain.com/api/generate \\
+curl -X POST https://api.playwithllm.com/api/generate \\
   -H "Content-Type: application/json" \\
   -H "x-api-key: YOUR_API_KEY_HERE" \\
   -d '{
@@ -49,32 +49,16 @@ curl -X POST https://your-domain.com/api/generate \\
   }'
 \`\`\`
 
+If the request is successful, you will receive a response from the model. Then you can use your preferred programming language to make requests from your application similarly.
+
 ### 4. Check Usage and Costs
-1. Go to **Usage** in the side menu for real-time metrics.
-2. Go to **Cost** for daily or monthly cost breakdowns.
-3. See **token usage**, **requests**, and **estimated costs**.
+1. Go to **Requests** to see the requests you have made.
+1. Go to **Usage** to see the tokens you have used.
+2. Go to **Cost** for daily cost breakdowns.
 
 ### 5. Get Support and Experiment
 - For real-time chat or to see model capabilities, go to **Support**.
 - Experiment with prompts or troubleshoot issues as needed.
-
----
-
-## API Reference
-
-### Base URL
-\`\`\`
-https://your-domain.com/api
-\`\`\`
-
-> Replace \`your-domain.com\` with your own domain.
-
-### Authentication
-All requests must include a valid **API key** in the HTTP header:
-
-\`\`\`
-x-api-key: YOUR_API_KEY_HERE
-\`\`\`
 
 ---
 
