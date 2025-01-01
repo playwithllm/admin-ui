@@ -46,15 +46,15 @@ export const DashboardLayout = () => {
 
   const menuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
-    { text: 'Users', icon: <UsersIcon />, path: '/users' },
+    // { text: 'Users', icon: <UsersIcon />, path: '/users' },
     { text: 'API Keys', icon: <ApiKeyIcon />, path: '/api-keys' },
+    { text: 'Prompt', icon: < PromptIcon/>, path: '/prompt' },
     { text: 'Requests', icon: <RequestsIcon />, path: '/requests' },
     { text: 'Usage', icon: <UsageIcon />, path: '/usage' },
     { text: 'Cost', icon: <CostIcon />, path: '/cost' },
-    { text: 'Billing', icon: <BillingIcon />, path: '/billing' },
-    { text: 'Profile', icon: <PersonIcon />, path: '/profile' },
+    // { text: 'Billing', icon: <BillingIcon />, path: '/billing' },
+    // { text: 'Profile', icon: <PersonIcon />, path: '/profile' },
     { text: 'Support', icon: <FeedbackIcon />, path: '/support' },
-    { text: 'Prompt', icon: < PromptIcon/>, path: '/prompt' },
   ];
 
   const drawer = (

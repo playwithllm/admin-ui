@@ -27,7 +27,7 @@ export const PromptInterface: React.FC = () => {
   const [selectedPrompt, setSelectedPrompt] = useState<Prompt | null>(null);
   const [response, setResponse] = useState<string>('');
   const [promptText, setPromptText] = useState<string>('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<any | null>(null);
 
   // load prompts from the server
   useEffect(() => {
@@ -57,8 +57,7 @@ export const PromptInterface: React.FC = () => {
 
   const handleSubmit = async () => {
     setResponse('');
-    setIsLoading(true);
-    
+  
     try {
       await api.post('/api/v1/inference/create', 
         { prompt: promptText }, 
@@ -78,11 +77,13 @@ export const PromptInterface: React.FC = () => {
         }
       );
       
-    } catch (error) {
-      console.error('Error during streaming:', error);
+    } catch (axiosError: any) {
+      console.error('Error during streaming:', axiosError);
+      setError(JSON.parse(axiosError.response.data));
       setResponse(prev => prev + '\nError occurred while processing request.');
     } finally {
-      setIsLoading(false);
+      console.log('Request completed.');
+      // setIsLoading(false);
     }
   };
 
@@ -114,9 +115,8 @@ export const PromptInterface: React.FC = () => {
           </Box>
         </Grid>
         <Grid item xs={12} md={9}>
-          {isLoading ? (
-            <CircularProgress />
-          ) : selectedPrompt ? (
+         {
+          selectedPrompt ? (
             <Card>
               <CardContent>
                 <Typography variant="h5" gutterBottom>{selectedPrompt.prompt}</Typography>
@@ -147,9 +147,15 @@ export const PromptInterface: React.FC = () => {
                 <ReactMarkdown>
                   {response}
                 </ReactMarkdown>
+                {error && (
+                  <Typography variant="subtitle1" color="error">
+                    <pre>{error.errorMessage}</pre>
+                  </Typography>
+                )}
               </CardContent>
             </Card>
-          )}
+          )
+         }
         </Grid>
       </Grid>
     </Box>

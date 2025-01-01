@@ -92,6 +92,7 @@ export const SupportPage = () => {
         else if (data.type === 'disable') {
           setIsChatDisabled(true);
           setDisableMessage(data.message);
+          setIsTyping(false);
           return;
         }
       } catch (error) {
