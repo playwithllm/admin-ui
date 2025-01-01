@@ -103,7 +103,7 @@ export const PromptInterface: React.FC = () => {
     } catch (axiosError: any) {
       console.error('Error during streaming:', axiosError);
       setError(JSON.parse(axiosError.response.data));
-      setResponse(prev => prev + '\nError occurred while processing request.');
+      setResponse(prev => prev);
     } finally {
       console.log('Request completed.');
       setRefetch(prev => !prev);

@@ -63,7 +63,7 @@ export const Dashboard = () => {
             <Typography color="textSecondary" gutterBottom>
               Total costs today
             </Typography>
-            <Typography variant="h4">{data.costAmount??0}</Typography>
+            <Typography variant="h4">৳{data.costAmount??0}</Typography>
           </CardContent>
         </Card>
       </Grid>      
