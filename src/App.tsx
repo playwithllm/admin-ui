@@ -25,6 +25,8 @@ import { PromptInterface} from './pages/PromptInterface';
 import { ApiKeyManager } from './pages/ApiKeysManager';
 import { Documentation } from './pages/Documentation';
 
+import Ecommerce from './ecommerce/App';
+
 // Import Roboto font
 import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
@@ -64,6 +66,8 @@ function App() {
                 <Route path="support" element={<SupportPage />} />
                 <Route path="prompt" element={<PromptInterface />} />
                 <Route path="documentation" element={<Documentation />} />
+              </Route>
+              <Route path="ecommerce/*" element={<Ecommerce />}>
               </Route>
             </Routes>
           </Router>
