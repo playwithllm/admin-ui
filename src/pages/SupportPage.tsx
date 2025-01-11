@@ -13,16 +13,19 @@ import {
   Divider,
   CircularProgress,
   Alert,
+  Button,
 } from '@mui/material';
 import {
   Send as SendIcon,
   AttachFile as AttachFileIcon,
+  Refresh as RefreshIcon,
 } from '@mui/icons-material';
 import ReactMarkdown from 'react-markdown';
 import imageCompression from 'browser-image-compression';
 
 import { useWebSocket } from '../context/WebSocketContext';
 import { useAuth } from '../hooks/useAuth';
+import api from '../utils/api';
 
 interface ChatMessage {
   id: number;
@@ -68,6 +71,41 @@ export const SupportPage = () => {
     if (!socket) return;
 
     console.log('Setting up socket event listeners...');
+
+    const fetchMessages = async () => {
+      const messages = await api.get(`/api/v1/inference/messages/${connectionId}`);
+      console.log('Fetched messages:', messages);
+      const formattedMessages: ChatMessage[] = messages.data.map((msg: any) => {
+        const prompt = {
+          id: msg._id,
+          sender:'user',
+          message: msg.prompt,
+          timestamp: msg.createdAt,
+          read: true,
+          // Add attachment if imageBase64 exists
+          ...(msg.imageBase64 && {
+            attachment: {
+              url: `data:image/jpeg;base64,${msg.imageBase64}`,
+              type: 'image/jpeg'
+            }
+          })
+        }
+
+        const response = {
+          id: msg._id,
+          sender:'support',
+          message: msg.response,
+          timestamp: msg.createdAt,
+          read: true,          
+        };
+
+        return [prompt, response];
+      }).flat();
+      
+      setMessages(formattedMessages);
+    };
+
+    fetchMessages();
 
     const handleSocketMessage = (data: any) => {
       try {
@@ -293,24 +331,52 @@ export const SupportPage = () => {
       <Alert severity="warning" sx={{ mb: 2, position: 'sticky', top: 0, zIndex: 1000 }}>
         The chat messages are unencrypted and stored in database. Also the images are stored in server and will be deleted after 24 hours. So please do not share any sensitive information.
       </Alert>
+      {!socket?.id && (
+        <Alert severity="error" sx={{ mb: 2, position: 'sticky', top: 0, zIndex: 1000 }}>
+          No connection ID found. Please refresh the page.
+        </Alert>
+      )}
       <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-        <Box sx={{ p: 2, bgcolor: 'primary.main', color: 'primary.contrastText' }}>
-          <Typography variant="h6">
-            Support Chat ID: {connectionId}
-          </Typography>
-          <Typography variant="body2" sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: 1,
-            backgroundColor: 'rgba(255, 255, 255, 0.1)',
-            borderRadius: 1,
-            px: 1,
-            py: 0.5,
-            mt: 1,
-            width: 'fit-content'
-          }}>
-            🤖 You are chatting with an LLM model: <Typography variant="body1" sx={{ fontWeight: 'bold' }}>InternVL2_5-1B</Typography>
-          </Typography>       
+        <Box sx={{ 
+          p: 2, 
+          bgcolor: 'primary.main', 
+          color: 'primary.contrastText',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
+          <Box>
+            <Typography variant="h6">
+              Support Chat ID: {connectionId}
+            </Typography>
+            <Typography variant="body2" sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: 1,
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              borderRadius: 1,
+              px: 1,
+              py: 0.5,
+              mt: 1,
+              width: 'fit-content'
+            }}>
+              🤖 You are chatting with an LLM model: <Typography variant="body1" sx={{ fontWeight: 'bold' }}>InternVL2_5-1B</Typography>
+            </Typography>
+          </Box>
+          <Button
+            variant="contained"
+            color="secondary"
+            startIcon={<RefreshIcon />}
+            onClick={() => window.location.reload()}
+            sx={{ 
+              bgcolor: 'rgba(255, 255, 255, 0.2)',
+              '&:hover': {
+                bgcolor: 'rgba(255, 255, 255, 0.3)',
+              }
+            }}
+          >
+            New Chat
+          </Button>
         </Box>
         <Divider />
 
@@ -462,7 +528,7 @@ export const SupportPage = () => {
             <IconButton
               color="primary"
               onClick={handleSendMessage}
-              disabled={isChatDisabled || !newMessage.trim()}
+              disabled={isChatDisabled || !newMessage.trim() || !socket?.id}
             >
               <SendIcon />
             </IconButton>
