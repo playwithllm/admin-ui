@@ -20,6 +20,7 @@ import {
   DialogActions,
   Button,
   MenuItem,
+  Box,
 } from '@mui/material';
 import ReactMarkdown from 'react-markdown';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -44,12 +45,14 @@ export const RequestsMonitoringPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   // State for request details modal
-  const [selectedRequest, setSelectedRequest] = useState<string | null>(null);
+  const [selectedRequest, setSelectedRequest] = useState<InferenceRequest | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
 
   const [requests, setRequests] = useState<InferenceRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -64,12 +67,13 @@ export const RequestsMonitoringPage = () => {
             prompt: request.prompt,
             createdAt: request.createdAt,
             status: request.status,
+            imageBase64: request.imageBase64,
             result: {
               ...request.result,
-              total_duration_in_seconds: (request.result.total_duration / (1000*1000*1000 )).toString(), // nanoseconds to seconds
-              load_duration_in_seconds: (request.result.load_duration / (1000*1000*1000 )).toString(), // nanoseconds to seconds
-              prompt_eval_duration_in_seconds: (request.result.prompt_eval_duration / (1000*1000*1000 )).toString(), // nanoseconds to seconds
-              eval_duration_in_seconds: (request.result.eval_duration / (1000*1000*1000 )).toString(), // nanoseconds to seconds
+              total_duration_in_seconds: (request.result?.total_duration || 0 / (1000*1000*1000 )).toString(), // nanoseconds to seconds
+              load_duration_in_seconds: (request.result?.load_duration || 0 / (1000*1000*1000 )).toString(), // nanoseconds to seconds
+              prompt_eval_duration_in_seconds: (request.result?.prompt_eval_duration || 0 / (1000*1000*1000 )).toString(), // nanoseconds to seconds
+              eval_duration_in_seconds: (request.result?.eval_duration || 0 / (1000*1000*1000 )).toString(), // nanoseconds to seconds
             },
             response: request.response,
             error: request.error,
@@ -100,8 +104,63 @@ export const RequestsMonitoringPage = () => {
 
   // Handle opening request details
   const handleOpenDetails = (requestId: string) => {
-    setSelectedRequest(requestId);
+    const temp = requests.find(r => r._id === requestId);
+    console.log('temp', temp);
+    setSelectedRequest(temp);
     setDetailsOpen(true);
+  };
+
+  const ImageViewer: React.FC<{ imageBase64: string }> = ({ imageBase64 }) => {
+    if (!imageBase64) return null;
+
+    return (
+      <Box 
+        sx={{ 
+          position: 'relative',
+          cursor: 'pointer',
+          marginBottom: 2 
+        }}
+        onClick={() => setIsFullscreen(!isFullscreen)}
+      >
+        <img
+          src={`data:image/jpeg;base64,${imageBase64}`}
+          alt="Generated content"
+          style={{
+            maxWidth: isFullscreen ? '90vw' : '100%',
+            height: 'auto',
+            borderRadius: '4px',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+          }}
+        />
+        {isFullscreen && (
+          <Box
+            sx={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0,0,0,0.8)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1000,
+            }}
+            onClick={() => setIsFullscreen(false)}
+          >
+            <img
+              src={`data:image/jpeg;base64,${imageBase64}`}
+              alt="Generated content fullscreen"
+              style={{
+                maxWidth: '90vw',
+                maxHeight: '90vh',
+                objectFit: 'contain'
+              }}
+            />
+          </Box>
+        )}
+      </Box>
+    );
   };
 
   return (
@@ -234,21 +293,29 @@ export const RequestsMonitoringPage = () => {
         fullWidth
       >
         <DialogTitle>
-          Request Details - {selectedRequest}
+          Request Details - {selectedRequest?._id} 
         </DialogTitle>
         <DialogContent dividers>
-          {selectedRequest && (
+          {selectedRequest?._id && (
             <Grid container spacing={2}>
+              <Grid item xs={12}>               
+                {selectedRequest?.imageBase64 && (
+                  <>
+                    <Typography variant="h6">Generated Image</Typography>
+                    <ImageViewer imageBase64={selectedRequest?.imageBase64 || ''} />
+                  </>
+                )}
+              </Grid>
               <Grid item xs={12}>
                 <Typography variant="h6">Prompt</Typography>
                 <Paper sx={{ p: 2, bgcolor: 'grey.100' }}>
-                  <ReactMarkdown>{requests.find(r => r._id === selectedRequest)?.prompt}</ReactMarkdown>                
+                  <ReactMarkdown>{selectedRequest?.prompt}</ReactMarkdown>                
                 </Paper>
               </Grid>
               <Grid item xs={12}>
                 <Typography variant="h6">Response</Typography>
                 <Paper sx={{ p: 2, bgcolor: 'grey.100' }}>
-                  <ReactMarkdown>{requests.find(r => r._id === selectedRequest)?.response}</ReactMarkdown>
+                  <ReactMarkdown>{selectedRequest?.response}</ReactMarkdown>
                 
                 </Paper>
               </Grid>
@@ -256,16 +323,16 @@ export const RequestsMonitoringPage = () => {
                 <Typography variant="h6">Result Details</Typography>
                 <Paper sx={{ p: 2, bgcolor: 'grey.100' }}>
                   <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>
-                    {JSON.stringify(requests.find(r => r._id === selectedRequest)?.result, null, 2)}
+                    {JSON.stringify(selectedRequest?.result, null, 2)}
                   </pre>
                 </Paper>
               </Grid>
-              {requests.find(r => r._id === selectedRequest)?.error && (
+              {selectedRequest?.error && (
                 <Grid item xs={12}>
                   <Typography variant="h6" color="error">Error Message</Typography>
                   <Paper sx={{ p: 2, bgcolor: 'error.light' }}>
                     <Typography color="error.contrastText">
-                      {requests.find(r => r._id === selectedRequest)?.error}
+                      {selectedRequest?.error}
                     </Typography>
                   </Paper>
                 </Grid>

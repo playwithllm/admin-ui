@@ -35,4 +35,5 @@ export interface InferenceRequest {
   updatedAt: string;
   response: string;
   tokensPerSecond: number;
+  imageBase64?: string;
 }
