@@ -13,9 +13,10 @@ import {
 import { Minus, Plus, Trash2 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
+import { ECOMMERCE_ROUTES } from '../constants/routes';
 
 const CartPage = () => {
-  const { cartItems, total } = useCart();
+  const { cartItems, total,  } = useCart();
   console.log({cartItems});
   const navigate = useNavigate();
 
@@ -27,7 +28,7 @@ const CartPage = () => {
         </Typography>
         <Button 
           variant="contained" 
-          onClick={() => navigate('/products')}
+          onClick={() => navigate(ECOMMERCE_ROUTES.PRODUCTS)}
           sx={{ mt: 2 }}
         >
           Continue Shopping
@@ -120,7 +121,7 @@ const CartPage = () => {
               <Button 
                 variant="contained" 
                 fullWidth 
-                onClick={() => navigate('/checkout')}
+                onClick={() => navigate(ECOMMERCE_ROUTES.CHECKOUT)}
               >
                 Proceed to Checkout
               </Button>

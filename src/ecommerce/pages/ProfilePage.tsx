@@ -1,7 +1,7 @@
 import React from 'react';
 import { Container, Typography, Button } from '@mui/material';
 
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 
 const ProfilePage = () => {
 

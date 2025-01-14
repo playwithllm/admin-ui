@@ -3,7 +3,8 @@ import { Box, AppBar, Toolbar, Typography, Button, Container, Badge } from '@mui
 import { useNavigate } from 'react-router-dom';
 import { ShoppingCart, User } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../../hooks/useAuth';
+import { ECOMMERCE_ROUTES } from '../../constants/routes';
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const navigate = useNavigate();
@@ -20,22 +21,22 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             sx={{ flexGrow: 1, cursor: 'pointer' }}
             onClick={() => navigate('/')}
           >
-            E-Commerce Store
+            PlayWithLLM
           </Typography>
-          <Button color="inherit" onClick={() => navigate('/products')}>
+          <Button color="inherit" onClick={() => navigate(ECOMMERCE_ROUTES.PRODUCTS)}>
             Products
           </Button>
-          <Button color="inherit" onClick={() => navigate('/cart')} sx={{ mr: 1 }}>
+          <Button color="inherit" onClick={() => navigate(ECOMMERCE_ROUTES.CART)} sx={{ mr: 1 }}>
             <Badge badgeContent={getCartCount()} color="error" overlap="circular" anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
               <ShoppingCart size={20} />
             </Badge>
           </Button>
           {isAuthenticated ? (
-            <Button color="inherit" onClick={() => navigate('/profile')}>
+            <Button color="inherit" onClick={() => navigate(ECOMMERCE_ROUTES.PROFILE)}>
               <User size={20} />
             </Button>
           ) : (
-            <Button color="inherit" onClick={() => navigate('/login')}>
+            <Button color="inherit" onClick={() => navigate(ECOMMERCE_ROUTES.LOGIN)}>
               Login
             </Button>
           )}

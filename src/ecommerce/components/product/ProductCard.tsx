@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { ShoppingCart } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import type { Product } from '../../types';
+import { ECOMMERCE_ROUTES } from '../../constants/routes';
 
 interface ProductCardProps {
   product: Product;
@@ -39,13 +40,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           }}
         >
           {product.description}
-        </Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-          <Rating value={product.rating} precision={0.5} readOnly size="small" />
-          <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>
-            ({product.rating})
-          </Typography>
-        </Box>
+        </Typography>        
         <Typography variant="h6" color="primary" sx={{ mb: 2 }}>
           ${product.price.toFixed(2)}
         </Typography>
@@ -53,7 +48,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <Button
             variant="outlined"
             fullWidth
-            onClick={() => navigate(`/products/${product.id}`)}
+            onClick={() => navigate(ECOMMERCE_ROUTES.PRODUCT_DETAIL(product.id))}
           >
             Details
           </Button>

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Container, Typography, TextField, Button, Grid, Card, CardContent, List, ListItem, ListItemText, Divider } from '@mui/material';
 import { useOrder } from '../context/OrderContext';
 import { useCart } from '../context/CartContext';
+import { ECOMMERCE_ROUTES } from '../constants/routes';
 
 interface AddressFormValues {
   firstName: string;
@@ -39,7 +40,7 @@ const CheckoutPage = () => {
     event.preventDefault();
     addOrder(addressFormValues);
     clearCart();
-    navigate('/');
+    navigate(ECOMMERCE_ROUTES.ROOT);
   };
 
   return (

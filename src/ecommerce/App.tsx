@@ -1,7 +1,6 @@
 import React, { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { CircularProgress, Box } from '@mui/material';
-import { useAuth } from '../context/AuthContext';
+
 
 const ProductListingPage = lazy(() => import('./pages/ProductListingPage'));
 const ProductDetailPage = lazy(() => import('./pages/ProductDetailPage'));

@@ -14,6 +14,7 @@ import {
 import { ShoppingCart, ArrowLeft } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { products } from '../data/products';
+import { ECOMMERCE_ROUTES } from '../constants/routes';
 
 const ProductDetailPage = () => {
   const { productId } = useParams();
@@ -29,7 +30,7 @@ const ProductDetailPage = () => {
         <Typography variant="h5">Product not found</Typography>
         <Button
           startIcon={<ArrowLeft />}
-          onClick={() => navigate('/products')}
+          onClick={() => navigate(ECOMMERCE_ROUTES.PRODUCTS)}
           sx={{ mt: 2 }}
         >
           Back to Products
@@ -42,7 +43,7 @@ const ProductDetailPage = () => {
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Button
         startIcon={<ArrowLeft />}
-        onClick={() => navigate('/products')}
+        onClick={() => navigate(ECOMMERCE_ROUTES.PRODUCTS)}
         sx={{ mb: 4 }}
       >
         Back to Products
