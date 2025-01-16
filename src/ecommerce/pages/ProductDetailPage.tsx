@@ -52,7 +52,7 @@ const ProductDetailPage = () => {
         <Grid item xs={12} md={6}>
           <Paper sx={{ p: 2 }}>
             <img
-              src={product.image}
+              src={product.images[0]}
               alt={product.name}
               style={{
                 width: '100%',
