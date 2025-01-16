@@ -19,7 +19,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       <CardMedia
         component="img"
         height="200"
-        image={product.image}
+        image={product.images[0]??''}
         alt={product.name}
         sx={{ objectFit: 'cover' }}
       />
@@ -48,7 +48,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <Button
             variant="outlined"
             fullWidth
-            onClick={() => navigate(ECOMMERCE_ROUTES.PRODUCT_DETAIL(product.id))}
+            onClick={() => navigate(ECOMMERCE_ROUTES.PRODUCT_DETAIL(product.id), {
+              state: { product }
+            })}
           >
             Details
           </Button>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
   Container,
   Grid,
@@ -13,16 +13,15 @@ import {
 } from '@mui/material';
 import { ShoppingCart, ArrowLeft } from 'lucide-react';
 import { useCart } from '../context/CartContext';
-import { products } from '../data/products';
 import { ECOMMERCE_ROUTES } from '../constants/routes';
+import type { Product } from '../types';
 
 const ProductDetailPage = () => {
-  const { productId } = useParams();
+  const location = useLocation();
+  const { product } = location.state as { product: Product };
   const navigate = useNavigate();
   const { addToCart: addItem } = useCart();
   const [quantity, setQuantity] = React.useState(1);
-
-  const product = products.find(p => p.id === productId);
 
   if (!product) {
     return (
