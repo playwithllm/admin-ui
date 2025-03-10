@@ -1,3 +1,4 @@
+import { lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
 import { ThemeProvider } from '@mui/material/styles';
@@ -25,11 +26,17 @@ import { PromptInterface} from './pages/PromptInterface';
 import { ApiKeyManager } from './pages/ApiKeysManager';
 import { Documentation } from './pages/Documentation';
 
+const EcommerceLayout = lazy(() => import('./ecommerce/components/layout/Layout'));
+import Ecommerce from './ecommerce/App';
+// CartProvider
+import { CartProvider } from './ecommerce/context/CartContext';
+
 // Import Roboto font
 import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
+
 
 function App() {
   return (
@@ -64,6 +71,14 @@ function App() {
                 <Route path="support" element={<SupportPage />} />
                 <Route path="prompt" element={<PromptInterface />} />
                 <Route path="documentation" element={<Documentation />} />
+              </Route>
+              <Route path="/ecommerce/*" element={
+                <CartProvider>
+                  <EcommerceLayout>
+                    <Ecommerce />
+                  </EcommerceLayout>
+                </CartProvider>
+              }>
               </Route>
             </Routes>
           </Router>

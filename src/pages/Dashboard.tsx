@@ -43,7 +43,7 @@ export const Dashboard = () => {
             <Typography color="textSecondary" gutterBottom>
               Free Tokens Remaining
             </Typography>
-            <Typography variant="h4">{data.tokenCount??0} / 10000</Typography>
+            <Typography variant="h4">{data.totalTokens??0} / 10000</Typography>
           </CardContent>
         </Card>
       </Grid>
@@ -63,7 +63,7 @@ export const Dashboard = () => {
             <Typography color="textSecondary" gutterBottom>
               Total costs today
             </Typography>
-            <Typography variant="h4">৳{data.costAmount??0}</Typography>
+            <Typography variant="h4">৳{data.totalCost??0}</Typography>
           </CardContent>
         </Card>
       </Grid>      
@@ -74,7 +74,7 @@ export const Dashboard = () => {
           <CardContent>
             <Typography variant="h6" gutterBottom>Remaining Quota</Typography>           
             <Typography>Tokens</Typography>
-            <LinearProgress variant="determinate" value={(data.tokenCount / 10000) * 100} />
+            <LinearProgress variant="determinate" value={(data.totalTokens / 10000) * 100} />
           </CardContent>
         </Card>
       </Grid>     

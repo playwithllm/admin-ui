@@ -21,9 +21,8 @@ export const WebSocketProvider = ({ children }: { children: ReactNode }) => {
       query: { userId },
       autoConnect: true,
     });
-    newSocket.on('connect', () => console.log('Socket connected:', newSocket.id));
-    newSocket.on('disconnect', () => console.log('Socket disconnected'));
-    setSocket(newSocket);
+    newSocket.on('connect', () => {setSocket(newSocket); console.log('Socket connected:', newSocket.id)});
+    newSocket.on('disconnect', () => {setSocket(null); console.log('Socket disconnected')});
   };
 
   useEffect(() => {

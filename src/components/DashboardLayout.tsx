@@ -27,6 +27,7 @@ import {
   MonetizationOn as CostIcon,
   EditSharp as PromptIcon,
   Chat as ChatIcon,
+  Store as EcommerceIcon,
 } from '@mui/icons-material';
 import { useNavigate, Outlet, useLocation } from 'react-router-dom';
 
@@ -56,7 +57,8 @@ export const DashboardLayout = () => {
     // { text: 'Billing', icon: <BillingIcon />, path: '/billing' },
     // { text: 'Profile', icon: <PersonIcon />, path: '/profile' },
     { text: 'Chatbot', icon: <ChatIcon />, path: '/support' },
-    {text: 'Documentation', icon: <FeedbackIcon />, path: '/documentation'}
+    { text: 'Documentation', icon: <FeedbackIcon />, path: '/documentation' },
+    { text: 'Ecommerce', icon: <EcommerceIcon />, path: '/ecommerce' }
   ];
 
   const drawer = (
@@ -151,4 +153,4 @@ export const DashboardLayout = () => {
       </Box>
     </Box>
   );
-}; 
+};

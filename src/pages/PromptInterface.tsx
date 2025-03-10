@@ -20,7 +20,8 @@ interface Prompt {
   response: string;
   userId: string;
   websocketId: string;
-  clientIp: string;  
+  clientIp: string;
+  imageBase64?: string;
 }
 
 export const PromptInterface: React.FC = () => {
@@ -110,6 +111,61 @@ export const PromptInterface: React.FC = () => {
     }
   };
 
+  const ImageViewer: React.FC<{ imageBase64: string }> = ({ imageBase64 }) => {
+    const [isFullscreen, setIsFullscreen] = useState(false);
+
+    if (!imageBase64) return null;
+
+    return (
+      <Box 
+        sx={{ 
+          position: 'relative',
+          cursor: 'pointer',
+          marginBottom: 2 
+        }}
+        onClick={() => setIsFullscreen(!isFullscreen)}
+      >
+        <img
+          src={`data:image/jpeg;base64,${imageBase64}`}
+          alt="Generated content"
+          style={{
+            maxWidth: isFullscreen ? '90vw' : '100%',
+            height: 'auto',
+            borderRadius: '4px',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+          }}
+        />
+        {isFullscreen && (
+          <Box
+            sx={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0,0,0,0.8)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1000,
+            }}
+            onClick={() => setIsFullscreen(false)}
+          >
+            <img
+              src={`data:image/jpeg;base64,${imageBase64}`}
+              alt="Generated content fullscreen"
+              style={{
+                maxWidth: '90vw',
+                maxHeight: '90vh',
+                objectFit: 'contain'
+              }}
+            />
+          </Box>
+        )}
+      </Box>
+    );
+  };
+
   return (
     <Box p={4}>
       <Grid container spacing={3}>
@@ -143,6 +199,9 @@ export const PromptInterface: React.FC = () => {
             <Card>
               <CardContent>
                 <Typography variant="h5" gutterBottom>{selectedPrompt.prompt}</Typography>
+                {selectedPrompt.imageBase64 && (
+                  <ImageViewer imageBase64={selectedPrompt.imageBase64} />
+                )}
                 <Typography variant="subtitle1">Response:</Typography>
                 <ReactMarkdown>
                   {selectedPrompt.response}
