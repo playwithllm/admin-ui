@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Grid, List, ListItem, ListItemText, Button, TextField, Typography, IconButton } from '@mui/material';
+import { Box, Grid, List, ListItem, ListItemText, Button, TextField, Typography, IconButton, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import ReactMarkdown from 'react-markdown';
 import api from '../utils/api';
 import { Card, CardContent, Divider } from '@mui/material';
@@ -33,6 +33,9 @@ export const PromptInterface: React.FC = () => {
   const [refetch, setRefetch] = useState<boolean>(false);
   const [curlCommand, setCurlCommand] = useState<string>('');
   const [apiKey, setApiKey] = useState<string>('');
+  const [selectedModel, setSelectedModel] = useState<string>("llama3.2");
+  
+  const availableModels = ["llama3.2", "InternVL2_5-1B-MPO", "qwen2.5-coder"];
 
   // load prompts from the server
   useEffect(() => {
@@ -59,16 +62,24 @@ export const PromptInterface: React.FC = () => {
     setError(null);
     setApiKey('');
     setCurlCommand('');
+    setSelectedModel("llama3.2");
     setRefetch(prev => !prev);
   };
 
-  const generateCurlCommand = (promptText: string, apiKey: string): string => {
+  const generateCurlCommand = (promptText: string, apiKey: string, model: string): string => {
     const baseUrl = import.meta.env.VITE_API_URL || 'https://api.playwithllm.com';
-    return `curl --location '${baseUrl}/api/generate' \\
---header 'x-api-key: ${apiKey}' \\
---header 'Content-Type: application/json' \\
---data '{
-    "prompt": "${promptText.replace(/"/g, '\\"')}"
+    return `curl ${baseUrl}/api/v1/chat/completions \\
+  -H "Content-Type: application/json" \\
+  -H "x-api-key: ${apiKey}" \\
+  -d '{
+  "model": "${model}",
+  "messages": [
+    {
+      "role": "user",
+      "content": "${promptText.replace(/"/g, '\\"')}"
+    }
+  ],
+  "stream": true
 }'`;
   };
 
@@ -76,11 +87,14 @@ export const PromptInterface: React.FC = () => {
     setResponse('');
     setError(null);
     // Generate and set curl command
-    setCurlCommand(generateCurlCommand(promptText, apiKey));
+    setCurlCommand(generateCurlCommand(promptText, apiKey, selectedModel));
   
     try {
       await api.post('/api/generate', 
-        { prompt: promptText }, 
+        { 
+          prompt: promptText,
+          model: selectedModel
+        }, 
         { 
           headers: {
             'x-api-key': apiKey,
@@ -220,6 +234,20 @@ export const PromptInterface: React.FC = () => {
                   value={promptText}
                   onChange={(e) => setPromptText(e.target.value)}
                 />
+                <FormControl fullWidth style={{ marginTop: '10px' }}>
+                  <InputLabel id="model-select-label">Select Model</InputLabel>
+                  <Select
+                    labelId="model-select-label"
+                    id="model-select"
+                    value={selectedModel}
+                    label="Select Model"
+                    onChange={(e) => setSelectedModel(e.target.value)}
+                  >
+                    {availableModels.map((model) => (
+                      <MenuItem key={model} value={model}>{model}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
                 <TextField
                   label="Enter your API key"
                   variant="outlined"
