@@ -56,9 +56,9 @@ export const DashboardLayout = () => {
     { text: 'Cost', icon: <CostIcon />, path: '/cost' },
     // { text: 'Billing', icon: <BillingIcon />, path: '/billing' },
     // { text: 'Profile', icon: <PersonIcon />, path: '/profile' },
-    { text: 'Chatbot', icon: <ChatIcon />, path: '/support' },
+    // { text: 'Chatbot', icon: <ChatIcon />, path: '/support' },
     { text: 'Documentation', icon: <FeedbackIcon />, path: '/documentation' },
-    { text: 'Ecommerce', icon: <EcommerceIcon />, path: '/ecommerce' }
+    // { text: 'Ecommerce', icon: <EcommerceIcon />, path: '/ecommerce' }
   ];
 
   const drawer = (

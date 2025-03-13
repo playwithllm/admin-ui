@@ -68,18 +68,18 @@ function App() {
                 <Route path="usage" element={<UsagePage />} />
                 <Route path="cost" element={<CostPage />} />
                 <Route path="profile" element={<ProfilePage />} />
-                <Route path="support" element={<SupportPage />} />
+                {/* <Route path="support" element={<SupportPage />} /> */}
                 <Route path="prompt" element={<PromptInterface />} />
                 <Route path="documentation" element={<Documentation />} />
               </Route>
-              <Route path="/ecommerce/*" element={
+              {/* <Route path="/ecommerce/*" element={
                 <CartProvider>
                   <EcommerceLayout>
                     <Ecommerce />
                   </EcommerceLayout>
                 </CartProvider>
               }>
-              </Route>
+              </Route> */}
             </Routes>
           </Router>
         </AuthProvider>
