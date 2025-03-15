@@ -1,9 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Grid, List, ListItem, ListItemText, Button, TextField, Typography, IconButton, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
+import { Box, Grid, List, ListItem, ListItemText, Button, TextField, Typography, IconButton, Select, MenuItem, FormControl, InputLabel, Checkbox, FormControlLabel } from '@mui/material';
 import ReactMarkdown from 'react-markdown';
 import api from '../utils/api';
 import { Card, CardContent, Divider } from '@mui/material';
 import CopyIcon from '@mui/icons-material/ContentCopy';
+
+// API URL Constants
+const API_URLS = {
+  MODELS: '/api/v1/models/available',
+  PROMPTS: '/api/v1/inference/search',
+  GENERATE: '/api/v1/inference/generate',
+  DEFAULT_BASE_URL: 'https://api.playwithllm.com',
+};
+
+// Content type constants
+const CONTENT_TYPES = {
+  JSON: 'Content-Type: application/json',
+  JPEG_BASE64_PREFIX: 'data:image/jpeg;base64,',
+};
+
+// Header Keys
+const HEADER_KEYS = {
+  CONTENT_TYPE: 'Content-Type',
+  API_KEY: 'x-api-key',
+};
 
 interface ModelConfig {
   id: string;
@@ -47,13 +67,14 @@ export const PromptInterface: React.FC = () => {
   const [selectedModel, setSelectedModel] = useState<string>('');
   const [availableModels, setAvailableModels] = useState<ModelConfig[]>([]);
   const [isLoadingModels, setIsLoadingModels] = useState<boolean>(true);
+  const [useDefaultApiKey, setUseDefaultApiKey] = useState<boolean>(false);
   
   // Load available models from the API
   useEffect(() => {
     const fetchModels = async () => {
       try {
         setIsLoadingModels(true);
-        const response = await api.get('/api/v1/models/available');
+        const response = await api.get(API_URLS.MODELS);
         const models = response.data;
         
         setAvailableModels(models);
@@ -76,7 +97,7 @@ export const PromptInterface: React.FC = () => {
   useEffect(() => {
     const fetchPrompts = async () => {
       try {
-        const response = await api.get('/api/v1/inference/search');
+        const response = await api.get(API_URLS.PROMPTS);
         setPrompts(response.data);
       } catch (error) {
         console.error('Error loading prompts:', error);
@@ -97,6 +118,7 @@ export const PromptInterface: React.FC = () => {
     setError(null);
     setApiKey('');
     setCurlCommand('');
+    setUseDefaultApiKey(false);
     // Reset to first available model or keep existing selection
     if (availableModels.length > 0) {
       setSelectedModel(availableModels[0].id);
@@ -104,11 +126,28 @@ export const PromptInterface: React.FC = () => {
     setRefetch(prev => !prev);
   };
 
-  const generateCurlCommand = (promptText: string, apiKey: string, model: string): string => {
-    const baseUrl = import.meta.env.VITE_API_URL || 'https://api.playwithllm.com';
-    return `curl ${baseUrl}/api/generate \\
-  -H "Content-Type: application/json" \\
-  -H "x-api-key: ${apiKey}" \\
+  const generateCurlCommand = (promptText: string, apiKey: string, model: string, useDefaultKey: boolean): string => {
+    const baseUrl = import.meta.env.VITE_API_URL || API_URLS.DEFAULT_BASE_URL;
+    
+    if (useDefaultKey) {
+      return `curl ${baseUrl}${API_URLS.GENERATE} \\
+  -H "${CONTENT_TYPES.JSON}" \\
+  -d '{
+  "model": "${model}",
+  "messages": [
+    {
+      "role": "user",
+      "content": "${promptText.replace(/"/g, '\\"')}"
+    }
+  ],
+  "stream": true,
+  "useDefaultApiKey": true
+}'`;
+    }
+    
+    return `curl ${baseUrl}${API_URLS.GENERATE} \\
+  -H "${CONTENT_TYPES.JSON}" \\
+  -H "${HEADER_KEYS.API_KEY}: ${apiKey}" \\
   -d '{
   "model": "${model}",
   "messages": [
@@ -125,19 +164,26 @@ export const PromptInterface: React.FC = () => {
     setResponse('');
     setError(null);
     // Generate and set curl command
-    setCurlCommand(generateCurlCommand(promptText, apiKey, selectedModel));
+    setCurlCommand(generateCurlCommand(promptText, apiKey, selectedModel, useDefaultApiKey));
   
     try {
-      await api.post('/api/generate', 
+      const headers: Record<string, string> = {
+        [HEADER_KEYS.CONTENT_TYPE]: 'application/json'
+      };
+      
+      // Only include API key in headers if not using default
+      if (!useDefaultApiKey && apiKey) {
+        headers[HEADER_KEYS.API_KEY] = apiKey;
+      }
+      
+      await api.post(API_URLS.GENERATE, 
         { 
           prompt: promptText,
-          model: selectedModel
+          model: selectedModel,
+          useDefaultApiKey: useDefaultApiKey
         }, 
         { 
-          headers: {
-            'x-api-key': apiKey,
-            'Content-Type': 'application/json'
-          },
+          headers,
           responseType: 'text',
           onDownloadProgress: (progressEvent) => {            
             const chunk = progressEvent.event.currentTarget.response;
@@ -178,7 +224,7 @@ export const PromptInterface: React.FC = () => {
         onClick={() => setIsFullscreen(!isFullscreen)}
       >
         <img
-          src={`data:image/jpeg;base64,${imageBase64}`}
+          src={`${CONTENT_TYPES.JPEG_BASE64_PREFIX}${imageBase64}`}
           alt="Generated content"
           style={{
             maxWidth: isFullscreen ? '90vw' : '100%',
@@ -204,7 +250,7 @@ export const PromptInterface: React.FC = () => {
             onClick={() => setIsFullscreen(false)}
           >
             <img
-              src={`data:image/jpeg;base64,${imageBase64}`}
+              src={`${CONTENT_TYPES.JPEG_BASE64_PREFIX}${imageBase64}`}
               alt="Generated content fullscreen"
               style={{
                 maxWidth: '90vw',
@@ -230,11 +276,10 @@ export const PromptInterface: React.FC = () => {
               {prompts.map((prompt, index) => (
                 <React.Fragment key={prompt._id}>
                   <ListItem 
-                    button 
                     onClick={() => handleSelectPrompt(prompt)} 
-                    selected={selectedPrompt?._id === prompt._id}
                     sx={{
                       bgcolor: selectedPrompt?._id === prompt._id ? 'action.selected' : 'transparent',
+                      cursor: 'pointer',
                     }}
                   >
                     <ListItemText primary={prompt.prompt} />
@@ -294,6 +339,18 @@ export const PromptInterface: React.FC = () => {
                     ))}
                   </Select>
                 </FormControl>
+                
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={useDefaultApiKey}
+                      onChange={(e) => setUseDefaultApiKey(e.target.checked)}
+                    />
+                  }
+                  label="Use Default API Key"
+                  style={{ marginTop: '10px', display: 'block' }}
+                />
+
                 <TextField
                   label="Enter your API key"
                   variant="outlined"
@@ -301,8 +358,24 @@ export const PromptInterface: React.FC = () => {
                   value={apiKey}
                   onChange={(e) => setApiKey(e.target.value)}
                   style={{ marginTop: '10px' }}
+                  disabled={useDefaultApiKey}
+                  helperText={useDefaultApiKey ? "Using server's default API key" : ""}
                 />
-                <Button variant="contained" color="primary" onClick={handleSubmit} fullWidth style={{ marginTop: '10px' }} disabled={!promptText || !apiKey || response || isLoadingModels || !selectedModel}>
+                
+                <Button 
+                  variant="contained" 
+                  color="primary" 
+                  onClick={handleSubmit} 
+                  fullWidth 
+                  style={{ marginTop: '10px' }} 
+                  disabled={
+                    !promptText || 
+                    (!apiKey && !useDefaultApiKey) || 
+                    Boolean(response) || 
+                    isLoadingModels || 
+                    !selectedModel
+                  }
+                >
                   Submit
                 </Button>
                 
