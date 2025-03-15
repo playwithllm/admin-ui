@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Box, Grid, List, ListItem, ListItemText, Button, TextField, Typography, IconButton, Select, MenuItem, FormControl, InputLabel, Checkbox, FormControlLabel } from '@mui/material';
 import ReactMarkdown from 'react-markdown';
 import api from '../utils/api';
 import { Card, CardContent, Divider } from '@mui/material';
 import CopyIcon from '@mui/icons-material/ContentCopy';
+import AttachFileIcon from '@mui/icons-material/AttachFile';
+import imageCompression from 'browser-image-compression';
 
 // API URL Constants
 const API_URLS = {
@@ -68,7 +70,10 @@ export const PromptInterface: React.FC = () => {
   const [availableModels, setAvailableModels] = useState<ModelConfig[]>([]);
   const [isLoadingModels, setIsLoadingModels] = useState<boolean>(true);
   const [useDefaultApiKey, setUseDefaultApiKey] = useState<boolean>(false);
-  
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [attachedImage, setAttachedImage] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
   // Load available models from the API
   useEffect(() => {
     const fetchModels = async () => {
@@ -124,6 +129,7 @@ export const PromptInterface: React.FC = () => {
       setSelectedModel(availableModels[0].id);
     }
     setRefetch(prev => !prev);
+    setIsSubmitting(false);
   };
 
   const generateCurlCommand = (promptText: string, apiKey: string, model: string, useDefaultKey: boolean): string => {
@@ -160,32 +166,82 @@ export const PromptInterface: React.FC = () => {
 }'`;
   };
 
+  const convertImageToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        const base64String = result.split(',')[1];
+        resolve(base64String);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file');
+      return;
+    }
+
+    try {
+      const options = {
+        maxSizeMB: 0.5,
+        maxWidthOrHeight: 512,
+        useWebWorker: true,
+        fileType: file.type,
+      };
+
+      const compressedFile = await imageCompression(file, options);
+      console.log('Original file size:', file.size / 1024 / 1024, 'MB');
+      console.log('Compressed file size:', compressedFile.size / 1024 / 1024, 'MB');
+
+      const base64Data = await convertImageToBase64(compressedFile);
+      setAttachedImage(base64Data);
+
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    } catch (error) {
+      console.error('Error processing image:', error);
+      alert('Error processing image. Please try again.');
+    }
+  };
+
   const handleSubmit = async () => {
     setResponse('');
     setError(null);
+    setIsSubmitting(true);
     // Generate and set curl command
     setCurlCommand(generateCurlCommand(promptText, apiKey, selectedModel, useDefaultApiKey));
-  
+
     try {
       const headers: Record<string, string> = {
         [HEADER_KEYS.CONTENT_TYPE]: 'application/json'
       };
-      
+
       // Only include API key in headers if not using default
       if (!useDefaultApiKey && apiKey) {
         headers[HEADER_KEYS.API_KEY] = apiKey;
       }
-      
-      await api.post(API_URLS.GENERATE, 
-        { 
+
+      await api.post(
+        API_URLS.GENERATE,
+        {
           prompt: promptText,
           model: selectedModel,
-          useDefaultApiKey: useDefaultApiKey
-        }, 
-        { 
+          useDefaultApiKey: useDefaultApiKey,
+          image: `data:image/jpeg;base64,${attachedImage}`,
+        },
+        {
           headers,
           responseType: 'text',
-          onDownloadProgress: (progressEvent) => {            
+          onDownloadProgress: (progressEvent) => {
             const chunk = progressEvent.event.currentTarget.response;
             console.log('Progress:', {
               loaded: progressEvent.loaded,
@@ -198,7 +254,9 @@ export const PromptInterface: React.FC = () => {
           }
         }
       );
-      
+
+      // Clear the attached image after successful submission
+      setAttachedImage(null);
     } catch (axiosError: any) {
       console.error('Error during streaming:', axiosError);
       setError(JSON.parse(axiosError.response.data));
@@ -206,6 +264,7 @@ export const PromptInterface: React.FC = () => {
     } finally {
       console.log('Request completed.');
       setRefetch(prev => !prev);
+      setIsSubmitting(false);
     }
   };
 
@@ -317,6 +376,30 @@ export const PromptInterface: React.FC = () => {
                   value={promptText}
                   onChange={(e) => setPromptText(e.target.value)}
                 />
+
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                />
+
+                <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <IconButton
+                    color="primary"
+                    onClick={() => fileInputRef.current?.click()}
+                    title="Attach image"
+                  >
+                    <AttachFileIcon />
+                  </IconButton>
+                  {attachedImage && (
+                    <Typography variant="body2" color="primary">
+                      Image attached
+                    </Typography>
+                  )}
+                </Box>
+
                 <FormControl fullWidth style={{ marginTop: '10px' }}>
                   <InputLabel id="model-select-label">Select Model</InputLabel>
                   <Select
@@ -369,6 +452,7 @@ export const PromptInterface: React.FC = () => {
                   fullWidth 
                   style={{ marginTop: '10px' }} 
                   disabled={
+                    isSubmitting ||
                     !promptText || 
                     (!apiKey && !useDefaultApiKey) || 
                     Boolean(response) || 
@@ -404,6 +488,28 @@ export const PromptInterface: React.FC = () => {
                     >
                       {curlCommand}
                     </Typography>
+                  </Box>
+                )}
+
+                {attachedImage && (
+                  <Box mt={2}>
+                    <img
+                      src={`data:image/jpeg;base64,${attachedImage}`}
+                      alt="Attached image"
+                      style={{
+                        maxWidth: '200px',
+                        maxHeight: '200px',
+                        objectFit: 'contain',
+                        borderRadius: '4px'
+                      }}
+                    />
+                    <Button
+                      size="small"
+                      onClick={() => setAttachedImage(null)}
+                      sx={{ mt: 1 }}
+                    >
+                      Remove Image
+                    </Button>
                   </Box>
                 )}
 
