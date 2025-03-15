@@ -1,9 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Grid, List, ListItem, ListItemText, Button, TextField, Typography, IconButton } from '@mui/material';
+import { Box, Grid, List, ListItem, ListItemText, Button, TextField, Typography, IconButton, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import ReactMarkdown from 'react-markdown';
 import api from '../utils/api';
 import { Card, CardContent, Divider } from '@mui/material';
 import CopyIcon from '@mui/icons-material/ContentCopy';
+
+interface ModelConfig {
+  id: string;
+  name: string;
+  provider: string;
+  description?: string;
+  contextLength?: number;
+  multimodal?: boolean;
+  enabled?: boolean;
+  capabilities?: Record<string, number>;
+}
 
 interface Prompt {
   _id: string;
@@ -33,6 +44,33 @@ export const PromptInterface: React.FC = () => {
   const [refetch, setRefetch] = useState<boolean>(false);
   const [curlCommand, setCurlCommand] = useState<string>('');
   const [apiKey, setApiKey] = useState<string>('');
+  const [selectedModel, setSelectedModel] = useState<string>('');
+  const [availableModels, setAvailableModels] = useState<ModelConfig[]>([]);
+  const [isLoadingModels, setIsLoadingModels] = useState<boolean>(true);
+  
+  // Load available models from the API
+  useEffect(() => {
+    const fetchModels = async () => {
+      try {
+        setIsLoadingModels(true);
+        const response = await api.get('/api/v1/models/available');
+        const models = response.data;
+        
+        setAvailableModels(models);
+        
+        // Set default model if one isn't already selected
+        if (!selectedModel && models.length > 0) {
+          setSelectedModel(models[0].id);
+        }
+      } catch (error) {
+        console.error('Error loading available models:', error);
+      } finally {
+        setIsLoadingModels(false);
+      }
+    };
+
+    fetchModels();
+  }, []);
 
   // load prompts from the server
   useEffect(() => {
@@ -59,16 +97,27 @@ export const PromptInterface: React.FC = () => {
     setError(null);
     setApiKey('');
     setCurlCommand('');
+    // Reset to first available model or keep existing selection
+    if (availableModels.length > 0) {
+      setSelectedModel(availableModels[0].id);
+    }
     setRefetch(prev => !prev);
   };
 
-  const generateCurlCommand = (promptText: string, apiKey: string): string => {
+  const generateCurlCommand = (promptText: string, apiKey: string, model: string): string => {
     const baseUrl = import.meta.env.VITE_API_URL || 'https://api.playwithllm.com';
-    return `curl --location '${baseUrl}/api/generate' \\
---header 'x-api-key: ${apiKey}' \\
---header 'Content-Type: application/json' \\
---data '{
-    "prompt": "${promptText.replace(/"/g, '\\"')}"
+    return `curl ${baseUrl}/api/generate \\
+  -H "Content-Type: application/json" \\
+  -H "x-api-key: ${apiKey}" \\
+  -d '{
+  "model": "${model}",
+  "messages": [
+    {
+      "role": "user",
+      "content": "${promptText.replace(/"/g, '\\"')}"
+    }
+  ],
+  "stream": true
 }'`;
   };
 
@@ -76,11 +125,14 @@ export const PromptInterface: React.FC = () => {
     setResponse('');
     setError(null);
     // Generate and set curl command
-    setCurlCommand(generateCurlCommand(promptText, apiKey));
+    setCurlCommand(generateCurlCommand(promptText, apiKey, selectedModel));
   
     try {
       await api.post('/api/generate', 
-        { prompt: promptText }, 
+        { 
+          prompt: promptText,
+          model: selectedModel
+        }, 
         { 
           headers: {
             'x-api-key': apiKey,
@@ -220,6 +272,28 @@ export const PromptInterface: React.FC = () => {
                   value={promptText}
                   onChange={(e) => setPromptText(e.target.value)}
                 />
+                <FormControl fullWidth style={{ marginTop: '10px' }}>
+                  <InputLabel id="model-select-label">Select Model</InputLabel>
+                  <Select
+                    labelId="model-select-label"
+                    id="model-select"
+                    value={selectedModel}
+                    label="Select Model"
+                    onChange={(e) => setSelectedModel(e.target.value)}
+                    disabled={isLoadingModels}
+                  >
+                    {availableModels.map((model) => (
+                      <MenuItem key={model.id} value={model.id}>
+                        {model.name} {model.multimodal ? '(multimodal)' : ''}
+                        {model.description && (
+                          <Typography variant="caption" sx={{ ml: 1, color: 'text.secondary' }}>
+                            - {model.description}
+                          </Typography>
+                        )}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
                 <TextField
                   label="Enter your API key"
                   variant="outlined"
@@ -228,7 +302,7 @@ export const PromptInterface: React.FC = () => {
                   onChange={(e) => setApiKey(e.target.value)}
                   style={{ marginTop: '10px' }}
                 />
-                <Button variant="contained" color="primary" onClick={handleSubmit} fullWidth style={{ marginTop: '10px' }} disabled={!promptText || !apiKey || response}>
+                <Button variant="contained" color="primary" onClick={handleSubmit} fullWidth style={{ marginTop: '10px' }} disabled={!promptText || !apiKey || response || isLoadingModels || !selectedModel}>
                   Submit
                 </Button>
                 
