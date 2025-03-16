@@ -81,9 +81,9 @@ export const PromptInterface: React.FC = () => {
         setIsLoadingModels(true);
         const response = await api.get(API_URLS.MODELS);
         const models = response.data;
-        
+
         setAvailableModels(models);
-        
+
         // Set default model if one isn't already selected
         if (!selectedModel && models.length > 0) {
           setSelectedModel(models[0].id);
@@ -132,38 +132,59 @@ export const PromptInterface: React.FC = () => {
     setIsSubmitting(false);
   };
 
-  const generateCurlCommand = (promptText: string, apiKey: string, model: string, useDefaultKey: boolean): string => {
+  const generateCurlCommand = (promptText: string, apiKey: string, model: string, useDefaultKey: boolean, imageBase64: string | null): string => {
     const baseUrl = import.meta.env.VITE_API_URL || API_URLS.DEFAULT_BASE_URL;
     
+    // Create message content based on whether an image is attached
+    let messageContent;
+    if (imageBase64) {
+      // For multimodal models, include both text and image
+      messageContent = `[
+        {
+          "type": "text",
+          "text": "${promptText.replace(/"/g, '\\"')}"
+        },
+        {
+          "type": "image_url",
+          "image_url": {
+            "url": "data:image/jpeg;base64,${imageBase64}"
+          }
+        }
+      ]`;
+    } else {
+      // For text-only prompts
+      messageContent = `"${promptText.replace(/"/g, '\\"')}"`;
+    }
+  
     if (useDefaultKey) {
       return `curl ${baseUrl}${API_URLS.GENERATE} \\
-  -H "${CONTENT_TYPES.JSON}" \\
-  -d '{
-  "model": "${model}",
-  "messages": [
-    {
-      "role": "user",
-      "content": "${promptText.replace(/"/g, '\\"')}"
+    -H "${CONTENT_TYPES.JSON}" \\
+    -d '{
+    "model": "${model}",
+    "messages": [
+      {
+        "role": "user",
+        "content": ${messageContent}
+      }
+    ],
+    "stream": true,
+    "useDefaultApiKey": true
+  }'`;
     }
-  ],
-  "stream": true,
-  "useDefaultApiKey": true
-}'`;
-    }
-    
+  
     return `curl ${baseUrl}${API_URLS.GENERATE} \\
-  -H "${CONTENT_TYPES.JSON}" \\
-  -H "${HEADER_KEYS.API_KEY}: ${apiKey}" \\
-  -d '{
-  "model": "${model}",
-  "messages": [
-    {
-      "role": "user",
-      "content": "${promptText.replace(/"/g, '\\"')}"
-    }
-  ],
-  "stream": true
-}'`;
+    -H "${CONTENT_TYPES.JSON}" \\
+    -H "${HEADER_KEYS.API_KEY}: ${apiKey}" \\
+    -d '{
+    "model": "${model}",
+    "messages": [
+      {
+        "role": "user",
+        "content": ${messageContent}
+      }
+    ],
+    "stream": true
+  }'`;
   };
 
   const convertImageToBase64 = (file: File): Promise<string> => {
@@ -218,7 +239,7 @@ export const PromptInterface: React.FC = () => {
     setError(null);
     setIsSubmitting(true);
     // Generate and set curl command
-    setCurlCommand(generateCurlCommand(promptText, apiKey, selectedModel, useDefaultApiKey));
+    setCurlCommand(generateCurlCommand(promptText, apiKey, selectedModel, useDefaultApiKey, attachedImage));
 
     try {
       const headers: Record<string, string> = {
@@ -272,18 +293,18 @@ export const PromptInterface: React.FC = () => {
     const [isFullscreen, setIsFullscreen] = useState(false);
 
     if (!imageBase64) return null;
-
+    
     return (
-      <Box 
-        sx={{ 
+      <Box
+        sx={{
           position: 'relative',
           cursor: 'pointer',
-          marginBottom: 2 
+          marginBottom: 2
         }}
         onClick={() => setIsFullscreen(!isFullscreen)}
       >
         <img
-          src={`${CONTENT_TYPES.JPEG_BASE64_PREFIX}${imageBase64}`}
+          src={`${imageBase64}`}
           alt="Generated content"
           style={{
             maxWidth: isFullscreen ? '90vw' : '100%',
@@ -309,7 +330,7 @@ export const PromptInterface: React.FC = () => {
             onClick={() => setIsFullscreen(false)}
           >
             <img
-              src={`${CONTENT_TYPES.JPEG_BASE64_PREFIX}${imageBase64}`}
+              src={imageBase64}
               alt="Generated content fullscreen"
               style={{
                 maxWidth: '90vw',
@@ -334,8 +355,8 @@ export const PromptInterface: React.FC = () => {
             <List>
               {prompts.map((prompt, index) => (
                 <React.Fragment key={prompt._id}>
-                  <ListItem 
-                    onClick={() => handleSelectPrompt(prompt)} 
+                  <ListItem
+                    onClick={() => handleSelectPrompt(prompt)}
                     sx={{
                       bgcolor: selectedPrompt?._id === prompt._id ? 'action.selected' : 'transparent',
                       cursor: 'pointer',
@@ -350,184 +371,184 @@ export const PromptInterface: React.FC = () => {
           </Box>
         </Grid>
         <Grid item xs={12} md={9}>
-         {
-          selectedPrompt ? (
-            <Card>
-              <CardContent>
-                <Typography variant="h5" gutterBottom>{selectedPrompt.prompt}</Typography>
-                {selectedPrompt.imageBase64 && (
-                  <ImageViewer imageBase64={selectedPrompt.imageBase64} />
-                )}
-                <Typography variant="subtitle1">Response:</Typography>
-                <ReactMarkdown>
-                  {selectedPrompt.response}
-                </ReactMarkdown>
-              </CardContent>
-            </Card>
-          ) : (
-            <Card>
-              <CardContent>
-                <TextField
-                  label="Enter your prompt"
-                  multiline
-                  rows={4}
-                  variant="outlined"
-                  fullWidth
-                  value={promptText}
-                  onChange={(e) => setPromptText(e.target.value)}
-                />
+          {
+            selectedPrompt ? (
+              <Card>
+                <CardContent>
+                  <Typography variant="h5" gutterBottom>{selectedPrompt.prompt}</Typography>
+                  {selectedPrompt.imageBase64 && (
+                    <ImageViewer imageBase64={selectedPrompt.imageBase64} />
+                  )}
+                  <Typography variant="subtitle1">Response:</Typography>
+                  <ReactMarkdown>
+                    {selectedPrompt.response}
+                  </ReactMarkdown>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card>
+                <CardContent>
+                  <TextField
+                    label="Enter your prompt"
+                    multiline
+                    rows={4}
+                    variant="outlined"
+                    fullWidth
+                    value={promptText}
+                    onChange={(e) => setPromptText(e.target.value)}
+                  />
 
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileChange}
-                  accept="image/*"
-                  style={{ display: 'none' }}
-                />
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                  />
 
-                <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <IconButton
+                  <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <IconButton
+                      color="primary"
+                      onClick={() => fileInputRef.current?.click()}
+                      title="Attach image"
+                    >
+                      <AttachFileIcon />
+                    </IconButton>
+                    {attachedImage && (
+                      <Typography variant="body2" color="primary">
+                        Image attached
+                      </Typography>
+                    )}
+                  </Box>
+
+                  <FormControl fullWidth style={{ marginTop: '10px' }}>
+                    <InputLabel id="model-select-label">Select Model</InputLabel>
+                    <Select
+                      labelId="model-select-label"
+                      id="model-select"
+                      value={selectedModel}
+                      label="Select Model"
+                      onChange={(e) => setSelectedModel(e.target.value)}
+                      disabled={isLoadingModels}
+                    >
+                      {availableModels.map((model) => (
+                        <MenuItem key={model.id} value={model.id}>
+                          {model.name} {model.multimodal ? '(multimodal)' : ''}
+                          {model.description && (
+                            <Typography variant="caption" sx={{ ml: 1, color: 'text.secondary' }}>
+                              - {model.description}
+                            </Typography>
+                          )}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={useDefaultApiKey}
+                        onChange={(e) => setUseDefaultApiKey(e.target.checked)}
+                      />
+                    }
+                    label="Use Default API Key"
+                    style={{ marginTop: '10px', display: 'block' }}
+                  />
+
+                  <TextField
+                    label="Enter your API key"
+                    variant="outlined"
+                    fullWidth
+                    value={apiKey}
+                    onChange={(e) => setApiKey(e.target.value)}
+                    style={{ marginTop: '10px' }}
+                    disabled={useDefaultApiKey}
+                    helperText={useDefaultApiKey ? "Using server's default API key" : ""}
+                  />
+
+                  <Button
+                    variant="contained"
                     color="primary"
-                    onClick={() => fileInputRef.current?.click()}
-                    title="Attach image"
+                    onClick={handleSubmit}
+                    fullWidth
+                    style={{ marginTop: '10px' }}
+                    disabled={
+                      isSubmitting ||
+                      !promptText ||
+                      (!apiKey && !useDefaultApiKey) ||
+                      Boolean(response) ||
+                      isLoadingModels ||
+                      !selectedModel
+                    }
                   >
-                    <AttachFileIcon />
-                  </IconButton>
+                    Submit
+                  </Button>
+
+                  {curlCommand && (
+                    <Box mt={2} p={2} bgcolor="#f5f5f5" borderRadius={1}>
+                      <Typography variant="subtitle2" gutterBottom style={{ display: 'flex', alignItems: 'center' }}>
+                        Equivalent cURL command:
+                        <IconButton
+                          aria-label="copy"
+                          size="small"
+                          onClick={() => navigator.clipboard.writeText(curlCommand)}
+                          style={{ marginLeft: '8px' }}
+                        >
+                          <CopyIcon />
+                        </IconButton>
+                      </Typography>
+                      <Typography
+                        component="pre"
+                        style={{
+                          overflowX: 'auto',
+                          whiteSpace: 'pre-wrap',
+                          wordBreak: 'break-all',
+                          fontSize: '0.85rem',
+                          fontFamily: 'monospace'
+                        }}
+                      >
+                        {curlCommand}
+                      </Typography>
+                    </Box>
+                  )}
+
                   {attachedImage && (
-                    <Typography variant="body2" color="primary">
-                      Image attached
+                    <Box mt={2}>
+                      <img
+                        src={`data:image/jpeg;base64,${attachedImage}`}
+                        alt="Attached image"
+                        style={{
+                          maxWidth: '200px',
+                          maxHeight: '200px',
+                          objectFit: 'contain',
+                          borderRadius: '4px'
+                        }}
+                      />
+                      <Button
+                        size="small"
+                        onClick={() => setAttachedImage(null)}
+                        sx={{ mt: 1 }}
+                      >
+                        Remove Image
+                      </Button>
+                    </Box>
+                  )}
+
+                  <Typography variant="subtitle1" style={{ marginTop: '20px' }}>
+                    Response:
+                  </Typography>
+                  <ReactMarkdown>
+                    {response}
+                  </ReactMarkdown>
+                  {error && (
+                    <Typography variant="subtitle1" color="error">
+                      <pre>{error.errorMessage}</pre>
                     </Typography>
                   )}
-                </Box>
-
-                <FormControl fullWidth style={{ marginTop: '10px' }}>
-                  <InputLabel id="model-select-label">Select Model</InputLabel>
-                  <Select
-                    labelId="model-select-label"
-                    id="model-select"
-                    value={selectedModel}
-                    label="Select Model"
-                    onChange={(e) => setSelectedModel(e.target.value)}
-                    disabled={isLoadingModels}
-                  >
-                    {availableModels.map((model) => (
-                      <MenuItem key={model.id} value={model.id}>
-                        {model.name} {model.multimodal ? '(multimodal)' : ''}
-                        {model.description && (
-                          <Typography variant="caption" sx={{ ml: 1, color: 'text.secondary' }}>
-                            - {model.description}
-                          </Typography>
-                        )}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-                
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={useDefaultApiKey}
-                      onChange={(e) => setUseDefaultApiKey(e.target.checked)}
-                    />
-                  }
-                  label="Use Default API Key"
-                  style={{ marginTop: '10px', display: 'block' }}
-                />
-
-                <TextField
-                  label="Enter your API key"
-                  variant="outlined"
-                  fullWidth
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
-                  style={{ marginTop: '10px' }}
-                  disabled={useDefaultApiKey}
-                  helperText={useDefaultApiKey ? "Using server's default API key" : ""}
-                />
-                
-                <Button 
-                  variant="contained" 
-                  color="primary" 
-                  onClick={handleSubmit} 
-                  fullWidth 
-                  style={{ marginTop: '10px' }} 
-                  disabled={
-                    isSubmitting ||
-                    !promptText || 
-                    (!apiKey && !useDefaultApiKey) || 
-                    Boolean(response) || 
-                    isLoadingModels || 
-                    !selectedModel
-                  }
-                >
-                  Submit
-                </Button>
-                
-                {curlCommand && (
-                  <Box mt={2} p={2} bgcolor="#f5f5f5" borderRadius={1}>
-                    <Typography variant="subtitle2" gutterBottom style={{ display: 'flex', alignItems: 'center' }}>
-                      Equivalent cURL command:
-                      <IconButton
-                        aria-label="copy"
-                        size="small"
-                        onClick={() => navigator.clipboard.writeText(curlCommand)}
-                        style={{ marginLeft: '8px' }}
-                      >
-                        <CopyIcon />
-                      </IconButton>
-                    </Typography>
-                    <Typography 
-                      component="pre" 
-                      style={{ 
-                        overflowX: 'auto', 
-                        whiteSpace: 'pre-wrap', 
-                        wordBreak: 'break-all',
-                        fontSize: '0.85rem',
-                        fontFamily: 'monospace'
-                      }}
-                    >
-                      {curlCommand}
-                    </Typography>
-                  </Box>
-                )}
-
-                {attachedImage && (
-                  <Box mt={2}>
-                    <img
-                      src={`data:image/jpeg;base64,${attachedImage}`}
-                      alt="Attached image"
-                      style={{
-                        maxWidth: '200px',
-                        maxHeight: '200px',
-                        objectFit: 'contain',
-                        borderRadius: '4px'
-                      }}
-                    />
-                    <Button
-                      size="small"
-                      onClick={() => setAttachedImage(null)}
-                      sx={{ mt: 1 }}
-                    >
-                      Remove Image
-                    </Button>
-                  </Box>
-                )}
-
-                <Typography variant="subtitle1" style={{ marginTop: '20px' }}>
-                  Response:
-                </Typography>
-                <ReactMarkdown>
-                  {response}
-                </ReactMarkdown>
-                {error && (
-                  <Typography variant="subtitle1" color="error">
-                    <pre>{error.errorMessage}</pre>
-                  </Typography>
-                )}
-              </CardContent>
-            </Card>
-          )
-         }
+                </CardContent>
+              </Card>
+            )
+          }
         </Grid>
       </Grid>
     </Box>

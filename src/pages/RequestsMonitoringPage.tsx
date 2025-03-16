@@ -123,7 +123,7 @@ export const RequestsMonitoringPage = () => {
         onClick={() => setIsFullscreen(!isFullscreen)}
       >
         <img
-          src={`data:image/jpeg;base64,${imageBase64}`}
+          src={`${imageBase64}`}
           alt="Generated content"
           style={{
             maxWidth: isFullscreen ? '90vw' : '100%',
@@ -149,7 +149,7 @@ export const RequestsMonitoringPage = () => {
             onClick={() => setIsFullscreen(false)}
           >
             <img
-              src={`data:image/jpeg;base64,${imageBase64}`}
+              src={`${imageBase64}`}
               alt="Generated content fullscreen"
               style={{
                 maxWidth: '90vw',
