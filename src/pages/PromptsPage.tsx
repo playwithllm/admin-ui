@@ -11,7 +11,6 @@ import {
   TableRow,
   TablePagination,
   Chip,
-  TextField,
   Grid,
   IconButton,
   Dialog,
@@ -19,30 +18,19 @@ import {
   DialogContent,
   DialogActions,
   Button,
-  MenuItem,
   Box,
 } from '@mui/material';
 import ReactMarkdown from 'react-markdown';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { Visibility as VisibilityIcon } from '@mui/icons-material';
 import api from '../utils/api';
 import { InferenceRequest } from '../types/inference';
 
 
-const statusOptions = ['', 'Success', 'Error'];
 
-export const RequestsMonitoringPage = () => {
+export const PromptsPage = () => {
   // State for filters and pagination
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [startDate, setStartDate] = useState<Date | null>(null);
-  const [endDate, setEndDate] = useState<Date | null>(null);
-  const [userFilter, setUserFilter] = useState('');
-  const [endpointFilter] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
 
   // State for request details modal
   const [selectedRequest, setSelectedRequest] = useState<InferenceRequest | null>(null);
@@ -59,24 +47,23 @@ export const RequestsMonitoringPage = () => {
       try {
         setLoading(true);
         const response = await api.get('/api/v1/inference/search');
-        console.log('RequestsMonitoringPage',response.data);
         const tempRequests: [] = response.data;
         const tempRequests2: InferenceRequest[] = tempRequests.map((request: any) => {
           return {
             _id: request._id,
+            userId: request.userId,
+            apiKeyId: request.apiKeyId,
             prompt: request.prompt,
-            createdAt: request.createdAt,
             status: request.status,
-            imageBase64: request.imageBase64,
-            result: {
-              ...request.result,
-              total_duration_in_seconds: (request.result?.total_duration || 0 / (1000*1000*1000 )).toString(), // nanoseconds to seconds
-              load_duration_in_seconds: (request.result?.load_duration || 0 / (1000*1000*1000 )).toString(), // nanoseconds to seconds
-              prompt_eval_duration_in_seconds: (request.result?.prompt_eval_duration || 0 / (1000*1000*1000 )).toString(), // nanoseconds to seconds
-              eval_duration_in_seconds: (request.result?.eval_duration || 0 / (1000*1000*1000 )).toString(), // nanoseconds to seconds
-            },
+            result: request.result,
             response: request.response,
             error: request.error,
+            modelName: request.modelName,
+            inputTime: request.inputTime,
+            isChatMessage: request.isChatMessage,
+            isCompleted: request.isCompleted,
+            createdAt: request.createdAt,
+            updatedAt: request.updatedAt,
           };
         });
         setRequests(tempRequests2);
@@ -114,16 +101,16 @@ export const RequestsMonitoringPage = () => {
     if (!imageBase64) return null;
 
     return (
-      <Box 
-        sx={{ 
+      <Box
+        sx={{
           position: 'relative',
           cursor: 'pointer',
-          marginBottom: 2 
+          marginBottom: 2
         }}
         onClick={() => setIsFullscreen(!isFullscreen)}
       >
         <img
-          src={`data:image/jpeg;base64,${imageBase64}`}
+          src={`${imageBase64}`}
           alt="Generated content"
           style={{
             maxWidth: isFullscreen ? '90vw' : '100%',
@@ -149,7 +136,7 @@ export const RequestsMonitoringPage = () => {
             onClick={() => setIsFullscreen(false)}
           >
             <img
-              src={`data:image/jpeg;base64,${imageBase64}`}
+              src={`${imageBase64}`}
               alt="Generated content fullscreen"
               style={{
                 maxWidth: '90vw',
@@ -166,66 +153,8 @@ export const RequestsMonitoringPage = () => {
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Typography variant="h4" gutterBottom>
-        Requests Monitoring
+        Prompts
       </Typography>
-
-      {/* Filters */}
-      {/* <Paper sx={{ p: 2, mb: 2 }}>
-        <Grid container spacing={2}>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Search"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              sx={{ mb: 2 }}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <LocalizationProvider dateAdapter={AdapterDateFns}>
-              <DatePicker
-                label="Start Date"
-                value={startDate}
-                onChange={(date) => setStartDate(date)}
-                slotProps={{ textField: { fullWidth: true } }}
-              />
-            </LocalizationProvider>
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <LocalizationProvider dateAdapter={AdapterDateFns}>
-              <DatePicker
-                label="End Date"
-                value={endDate}
-                onChange={(date) => setEndDate(date)}
-                slotProps={{ textField: { fullWidth: true } }}
-              />
-            </LocalizationProvider>
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <TextField
-              fullWidth
-              label="User"
-              value={userFilter}
-              onChange={(e) => setUserFilter(e.target.value)}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <TextField
-              select
-              fullWidth
-              label="Status"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-            >
-              {statusOptions.map((option) => (
-                <MenuItem key={option} value={option}>
-                  {option || 'All'}
-                </MenuItem>
-              ))}
-            </TextField>
-          </Grid>
-        </Grid>
-      </Paper> */}
 
       {/* Requests Table */}
       <Paper sx={{ width: '100%', mb: 2 }}>
@@ -235,10 +164,9 @@ export const RequestsMonitoringPage = () => {
               <TableRow>
                 <TableCell>Request prompt</TableCell>
                 <TableCell>Timestamp</TableCell>
-                {/* <TableCell>User ID</TableCell> */}
-                {/* <TableCell>Model</TableCell> */}
+                <TableCell>Model</TableCell>
                 <TableCell>Status</TableCell>
-                <TableCell>Duration (s)</TableCell>
+                <TableCell>Duration (ms)</TableCell>
                 <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
@@ -251,8 +179,7 @@ export const RequestsMonitoringPage = () => {
                 <TableRow key={request._id}>
                   <TableCell>{request.prompt}</TableCell>
                   <TableCell>{new Date(request.createdAt).toLocaleString()}</TableCell>
-                  {/* <TableCell>{request.userId}</TableCell> */}
-                  {/* <TableCell>{request.modelName}</TableCell> */}
+                  <TableCell>{request.modelName}</TableCell>
                   <TableCell>
                     <Chip
                       label={request.status}
@@ -260,7 +187,7 @@ export const RequestsMonitoringPage = () => {
                       size="small"
                     />
                   </TableCell>
-                  <TableCell>{request.result?.total_duration_in_seconds || 'N/A'}</TableCell>
+                  <TableCell>{request.result?.duration || 'N/A'}</TableCell>
                   <TableCell>
                     <IconButton
                       size="small"
@@ -293,12 +220,12 @@ export const RequestsMonitoringPage = () => {
         fullWidth
       >
         <DialogTitle>
-          Request Details - {selectedRequest?._id} 
+          Request Details - {selectedRequest?._id}
         </DialogTitle>
         <DialogContent dividers>
           {selectedRequest?._id && (
             <Grid container spacing={2}>
-              <Grid item xs={12}>               
+              <Grid item xs={12}>
                 {selectedRequest?.imageBase64 && (
                   <>
                     <Typography variant="h6">Generated Image</Typography>
@@ -309,14 +236,14 @@ export const RequestsMonitoringPage = () => {
               <Grid item xs={12}>
                 <Typography variant="h6">Prompt</Typography>
                 <Paper sx={{ p: 2, bgcolor: 'grey.100' }}>
-                  <ReactMarkdown>{selectedRequest?.prompt}</ReactMarkdown>                
+                  <ReactMarkdown>{selectedRequest?.prompt}</ReactMarkdown>
                 </Paper>
               </Grid>
               <Grid item xs={12}>
                 <Typography variant="h6">Response</Typography>
                 <Paper sx={{ p: 2, bgcolor: 'grey.100' }}>
                   <ReactMarkdown>{selectedRequest?.response}</ReactMarkdown>
-                
+
                 </Paper>
               </Grid>
               <Grid item xs={12}>

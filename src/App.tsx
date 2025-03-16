@@ -10,7 +10,7 @@ import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { Dashboard } from './pages/Dashboard';
 import { APIKeysPage } from './pages/APIKeysPage';
-import { RequestsMonitoringPage } from './pages/RequestsMonitoringPage';
+import { PromptsPage } from './pages/PromptsPage';
 import { UserManagementPage } from './pages/UserManagementPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { SupportPage } from './pages/SupportPage';
@@ -62,7 +62,7 @@ function App() {
               >
                 <Route index path="dashboard" element={<Dashboard />} />
                 <Route path="api-keys" element={<ApiKeyManager />} />
-                <Route path="requests" element={<RequestsMonitoringPage />} />
+                <Route path="prompts" element={<PromptsPage />} />
                 <Route path="users" element={<UserManagementPage />} />
                 <Route path="billing" element={<BillingPage />} />
                 <Route path="usage" element={<UsagePage />} />

@@ -360,7 +360,7 @@ export const SupportPage = () => {
               mt: 1,
               width: 'fit-content'
             }}>
-              🤖 You are chatting with an LLM model: <Typography variant="body1" sx={{ fontWeight: 'bold' }}>InternVL2_5-1B-MPO</Typography>
+              🤖 You are chatting with an LLM model: <Typography variant="body1" sx={{ fontWeight: 'bold' }}>Gemma3-12B</Typography>
             </Typography>
           </Box>
           <Button
