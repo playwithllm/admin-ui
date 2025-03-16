@@ -2,17 +2,9 @@ import {
   Box,
   Typography,
   Paper,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
   Grid,
-  IconButton,
-  Button,
-  SelectChangeEvent,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 import {
   LineChart,
   Line,
@@ -26,129 +18,82 @@ import {
 import api from '../../utils/api';
 
 interface UsageData {
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
   date: string;
-  promptEvalCount: number;
-  evalCount: number;
+  requestCount: number;
+  promptCost: number;
+  completionCost: number;
+  totalCost: number;
+  totalDurationInMs: number;
 }
 
 export const UsagePage = () => {
-  const [workspace, setWorkspace] = useState('All Workspaces');
-  const [apiKey, setApiKey] = useState('All API keys');
-  const [model, setModel] = useState('All Models');
-  const [currentMonth] = useState('Dec 2024');
-  const [groupBy, setGroupBy] = useState('None');
   const [usageData, setUsageData] = useState<UsageData[]>([]);
   const [totalPromptTokens, setTotalPromptTokens] = useState(0);
   const [totalCompletionTokens, setTotalCompletionTokens] = useState(0);
+  // Add state for totalTokens
+  const [totalTokens, setTotalTokens] = useState(0);
 
   useEffect(() => {
     // Fetch data from the API
-    api.get<UsageData[]>('/api/v1/inference/grouped-evaluation-counts').then((response) => {
-      setUsageData(response.data);
-      // Calculate totals
-      const promptTotal = response.data.reduce((sum, item) => sum + item.promptEvalCount, 0);
-      const completionTotal = response.data.reduce((sum, item) => sum + item.evalCount, 0);
-      setTotalPromptTokens(promptTotal);
-      setTotalCompletionTokens(completionTotal);
-    });
+    api
+      .get<UsageData[]>('/api/v1/inference/grouped-evaluation-counts')
+      .then((response) => {
+        setUsageData(response.data);
+        // Calculate totals
+        const promptTotal = response.data.reduce(
+          (sum, item) => sum + item.promptTokens,
+          0
+        );
+        const completionTotal = response.data.reduce(
+          (sum, item) => sum + item.completionTokens,
+          0
+        );
+        // Calculate totalTokens
+        const tokensTotal = response.data.reduce(
+          (sum, item) => sum + item.totalTokens,
+          0
+        );
+        setTotalPromptTokens(promptTotal);
+        setTotalCompletionTokens(completionTotal);
+        setTotalTokens(tokensTotal);
+      });
   }, []);
-
-  const handleWorkspaceChange = (event: SelectChangeEvent) => {
-    setWorkspace(event.target.value);
-  };
-
-  const handleApiKeyChange = (event: SelectChangeEvent) => {
-    setApiKey(event.target.value);
-  };
-
-  const handleModelChange = (event: SelectChangeEvent) => {
-    setModel(event.target.value);
-  };
-
-  const handleGroupByChange = (event: SelectChangeEvent) => {
-    setGroupBy(event.target.value);
-  };
-
-  const handlePreviousMonth = () => {
-    // Add logic to change to previous month
-  };
-
-  const handleNextMonth = () => {
-    // Add logic to change to next month
-  };
 
   return (
     <Box sx={{ p: 3 }}>
-      {/* <Typography variant="h4" gutterBottom>
-        Usage
-      </Typography> */}
-
-      {/* Filters Row */}
-      {/* <Box sx={{ display: 'flex', gap: 2, mb: 4, flexWrap: 'wrap' }}>
-        <FormControl size="small" sx={{ minWidth: 150 }}>
-          <InputLabel>Workspace</InputLabel>
-          <Select value={workspace} label="Workspace" onChange={handleWorkspaceChange}>
-            <MenuItem value="All Workspaces">All Workspaces</MenuItem>
-          </Select>
-        </FormControl>
-
-        <FormControl size="small" sx={{ minWidth: 150 }}>
-          <InputLabel>API Key</InputLabel>
-          <Select value={apiKey} label="API Key" onChange={handleApiKeyChange}>
-            <MenuItem value="All API keys">All API keys</MenuItem>
-         
-          </Select>
-        </FormControl>
-
-        <FormControl size="small" sx={{ minWidth: 150 }}>
-          <InputLabel>Model</InputLabel>
-          <Select value={model} label="Model" onChange={handleModelChange}>
-            <MenuItem value="All Models">All Models</MenuItem>
-         
-          </Select>
-        </FormControl>
-
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <IconButton onClick={handlePreviousMonth} size="small">
-            <ChevronLeft />
-          </IconButton>
-          <Typography>{currentMonth}</Typography>
-          <IconButton onClick={handleNextMonth} size="small">
-            <ChevronRight />
-          </IconButton>
-        </Box>
-
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, ml: 'auto' }}>
-          <FormControl size="small" sx={{ minWidth: 150 }}>
-            <InputLabel>Group by</InputLabel>
-            <Select value={groupBy} label="Group by" onChange={handleGroupByChange}>
-              <MenuItem value="None">None</MenuItem>
-              <MenuItem value="Model">Model</MenuItem>
-              <MenuItem value="API Key">API Key</MenuItem>
-            </Select>
-          </FormControl>
-          <Button variant="contained" color="primary">
-            Export
-          </Button>
-        </Box>
-      </Box> */}
-
       {/* Stats Cards */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} md={4}>
           <Paper sx={{ p: 3, bgcolor: 'background.default' }}>
             <Typography variant="h6" gutterBottom>
-              Total tokens in
+              Total Prompt Tokens
             </Typography>
-            <Typography variant="h3">{totalPromptTokens.toLocaleString()}</Typography>
+            <Typography variant="h3">
+              {totalPromptTokens.toLocaleString()}
+            </Typography>
           </Paper>
         </Grid>
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} md={4}>
           <Paper sx={{ p: 3, bgcolor: 'background.default' }}>
             <Typography variant="h6" gutterBottom>
-              Total tokens out
+              Total Completion Tokens
             </Typography>
-            <Typography variant="h3">{totalCompletionTokens.toLocaleString()}</Typography>
+            <Typography variant="h3">
+              {totalCompletionTokens.toLocaleString()}
+            </Typography>
+          </Paper>
+        </Grid>
+        <Grid item xs={12} md={4}>
+          <Paper sx={{ p: 3, bgcolor: 'background.default' }}>
+            <Typography variant="h6" gutterBottom>
+              Total Tokens
+            </Typography>
+            <Typography variant="h3">
+              {totalTokens.toLocaleString()}
+            </Typography>
           </Paper>
         </Grid>
       </Grid>
@@ -166,21 +111,26 @@ export const UsagePage = () => {
             <LineChart data={usageData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
-              <YAxis />
+              <YAxis yAxisId="left" />
+              <YAxis yAxisId="right" orientation="right" />
               <Tooltip />
+              {/* requestCount */}
               <Line
+                yAxisId="left"
                 type="monotone"
-                name="Prompt Tokens"
-                dataKey="promptEvalCount"
-                stroke="#8884d8"
+                name="Requests"
+                dataKey="requestCount"
+                stroke="#ff0000"
                 strokeWidth={2}
                 dot={false}
               />
+              {/* cost */}
               <Line
+                yAxisId="right"
                 type="monotone"
-                name="Completion Tokens"
-                dataKey="evalCount"
-                stroke="#82ca9d"
+                name="Tokens"
+                dataKey="totalTokens"
+                stroke="#0000ff"
                 strokeWidth={2}
                 dot={false}
               />

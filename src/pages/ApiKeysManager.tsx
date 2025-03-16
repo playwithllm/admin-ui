@@ -31,22 +31,20 @@ import axiosInstance from '../utils/api';
 
 export interface ApiKey {
   _id: string;
-  createdAt: string;
   name: string;
   keyPrefix: string;
   status: string;
+  createdAt: string;
+  updatedAt: string;
+  userId: string;
+  hashedKey: string;
+  salt: string;
   usage: {
-    requests: number,
-    tokens: number,
-    cost: number,
-    prompt_eval_count: number,
-    eval_count: number,
-    total_count: number,
-    prompt_eval_cost: number,
-    eval_cost: number,
-    total_cost: number,
-    total_duration: number,
-  },
+    requests: number;
+    tokens: number;
+    cost: number;
+    duration: number;
+  };
 }
 
 export const ApiKeyManager: React.FC = () => {
@@ -246,13 +244,9 @@ export const ApiKeyManager: React.FC = () => {
                       <TableCell>Created At</TableCell>
                       <TableCell>Status</TableCell>
                       <TableCell>Requests</TableCell>
-                      <TableCell>Input tokens</TableCell>
-                      <TableCell>Output tokens</TableCell>
-                      <TableCell>Total tokens</TableCell>
-                      <TableCell>Input cost</TableCell>
-                      <TableCell>Output cost</TableCell>
-                      <TableCell>Total cost</TableCell>
-                      <TableCell>Total duration (seconds)</TableCell>
+                      <TableCell>Tokens</TableCell>
+                      <TableCell>Cost</TableCell>
+                      <TableCell>Duration (milliseconds)</TableCell>
                       <TableCell>Actions</TableCell>
                     </TableRow>
                   </TableHead>
@@ -270,13 +264,9 @@ export const ApiKeyManager: React.FC = () => {
                           />
                         </TableCell>
                         <TableCell>{key.usage.requests}</TableCell>
-                        <TableCell>{key.usage.prompt_eval_count}</TableCell>
-                        <TableCell>{key.usage.eval_count}</TableCell>
-                        <TableCell>{key.usage.total_count}</TableCell>
-                        <TableCell>{key.usage.prompt_eval_cost?.toFixed(6)}</TableCell>
-                        <TableCell>{key.usage.eval_cost?.toFixed(6)}</TableCell>
-                        <TableCell>{key.usage.total_cost?.toFixed(6)}</TableCell>
-                        <TableCell>{key.usage.total_duration?.toFixed(4)}</TableCell>
+                        <TableCell>{key.usage.tokens}</TableCell>
+                        <TableCell>{key.usage.cost?.toFixed(6)}</TableCell>
+                        <TableCell>{key.usage.duration?.toFixed(2)}</TableCell>
                         <TableCell>
                           {key.status === 'active' && (
                             <IconButton edge="end" color="error" onClick={() => handleRevokeApiKey(key._id)}>

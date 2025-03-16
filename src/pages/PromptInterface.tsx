@@ -134,7 +134,7 @@ export const PromptInterface: React.FC = () => {
 
   const generateCurlCommand = (promptText: string, apiKey: string, model: string, useDefaultKey: boolean, imageBase64: string | null): string => {
     const baseUrl = import.meta.env.VITE_API_URL || API_URLS.DEFAULT_BASE_URL;
-    
+
     // Create message content based on whether an image is attached
     let messageContent;
     if (imageBase64) {
@@ -155,7 +155,7 @@ export const PromptInterface: React.FC = () => {
       // For text-only prompts
       messageContent = `"${promptText.replace(/"/g, '\\"')}"`;
     }
-  
+
     if (useDefaultKey) {
       return `curl ${baseUrl}${API_URLS.GENERATE} \\
     -H "${CONTENT_TYPES.JSON}" \\
@@ -171,7 +171,7 @@ export const PromptInterface: React.FC = () => {
     "useDefaultApiKey": true
   }'`;
     }
-  
+
     return `curl ${baseUrl}${API_URLS.GENERATE} \\
     -H "${CONTENT_TYPES.JSON}" \\
     -H "${HEADER_KEYS.API_KEY}: ${apiKey}" \\
@@ -257,7 +257,7 @@ export const PromptInterface: React.FC = () => {
           prompt: promptText,
           model: selectedModel,
           useDefaultApiKey: useDefaultApiKey,
-          image: `data:image/jpeg;base64,${attachedImage}`,
+          image: attachedImage ? `data:image/jpeg;base64,${attachedImage}` : undefined,
         },
         {
           headers,
@@ -293,7 +293,7 @@ export const PromptInterface: React.FC = () => {
     const [isFullscreen, setIsFullscreen] = useState(false);
 
     if (!imageBase64) return null;
-    
+
     return (
       <Box
         sx={{

@@ -50,8 +50,8 @@ export const DashboardLayout = () => {
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
     // { text: 'Users', icon: <UsersIcon />, path: '/users' },
     { text: 'API Keys', icon: <ApiKeyIcon />, path: '/api-keys' },
-    { text: 'Prompt', icon: < PromptIcon/>, path: '/prompt' },
-    { text: 'Requests', icon: <RequestsIcon />, path: '/requests' },
+    { text: 'Prompt', icon: <PromptIcon />, path: '/prompt' },
+    { text: 'Prompts', icon: <MenuIcon />, path: '/prompts' },
     { text: 'Usage', icon: <UsageIcon />, path: '/usage' },
     { text: 'Cost', icon: <CostIcon />, path: '/cost' },
     // { text: 'Billing', icon: <BillingIcon />, path: '/billing' },
@@ -116,7 +116,7 @@ export const DashboardLayout = () => {
       >
         <Navbar onMenuClick={handleDrawerToggle} />
       </AppBar>
-      
+
       <Box
         component="nav"
         sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
