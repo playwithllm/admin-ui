@@ -51,19 +51,19 @@ export const PromptsPage = () => {
         const tempRequests2: InferenceRequest[] = tempRequests.map((request: any) => {
           return {
             _id: request._id,
+            userId: request.userId,
+            apiKeyId: request.apiKeyId,
             prompt: request.prompt,
-            createdAt: request.createdAt,
             status: request.status,
-            imageBase64: request.imageBase64,
-            result: {
-              ...request.result,
-              total_duration_in_seconds: (request.result?.total_duration || 0 / (1000 * 1000 * 1000)).toString(), // nanoseconds to seconds
-              load_duration_in_seconds: (request.result?.load_duration || 0 / (1000 * 1000 * 1000)).toString(), // nanoseconds to seconds
-              prompt_eval_duration_in_seconds: (request.result?.prompt_eval_duration || 0 / (1000 * 1000 * 1000)).toString(), // nanoseconds to seconds
-              eval_duration_in_seconds: (request.result?.eval_duration || 0 / (1000 * 1000 * 1000)).toString(), // nanoseconds to seconds
-            },
+            result: request.result,
             response: request.response,
             error: request.error,
+            modelName: request.modelName,
+            inputTime: request.inputTime,
+            isChatMessage: request.isChatMessage,
+            isCompleted: request.isCompleted,
+            createdAt: request.createdAt,
+            updatedAt: request.updatedAt,
           };
         });
         setRequests(tempRequests2);
@@ -164,10 +164,9 @@ export const PromptsPage = () => {
               <TableRow>
                 <TableCell>Request prompt</TableCell>
                 <TableCell>Timestamp</TableCell>
-                {/* <TableCell>User ID</TableCell> */}
-                {/* <TableCell>Model</TableCell> */}
+                <TableCell>Model</TableCell>
                 <TableCell>Status</TableCell>
-                <TableCell>Duration (s)</TableCell>
+                <TableCell>Duration (ms)</TableCell>
                 <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
@@ -180,8 +179,7 @@ export const PromptsPage = () => {
                 <TableRow key={request._id}>
                   <TableCell>{request.prompt}</TableCell>
                   <TableCell>{new Date(request.createdAt).toLocaleString()}</TableCell>
-                  {/* <TableCell>{request.userId}</TableCell> */}
-                  {/* <TableCell>{request.modelName}</TableCell> */}
+                  <TableCell>{request.modelName}</TableCell>
                   <TableCell>
                     <Chip
                       label={request.status}
@@ -189,7 +187,7 @@ export const PromptsPage = () => {
                       size="small"
                     />
                   </TableCell>
-                  <TableCell>{request.result?.total_duration_in_seconds || 'N/A'}</TableCell>
+                  <TableCell>{request.result?.duration || 'N/A'}</TableCell>
                   <TableCell>
                     <IconButton
                       size="small"
